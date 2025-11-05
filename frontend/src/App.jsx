@@ -11,6 +11,9 @@ import Footer from "./components/Footer";
 import Products from "./pages/Products";
 import Cart from "./pages/Cart";
 import Wishlist from "./components/Wishlist";
+import Checkout from "./pages/Checkout";
+import PaySuccess from "./pages/PaySuccess";
+import PayCancel from "./pages/PayCancel";
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/pay/success" element={<PaySuccess />} />
+          <Route path="/pay/cancel" element={<PayCancel />} />
         </Routes>
       </main>
 
