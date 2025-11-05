@@ -1,8 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
+const jwt = require("jsonwebtoken");
 
-// GET /api/products
+// ✅ Simple role-based middleware (same logic pattern as in users.js)
+function authorize(roles = []) {
+  return (req, res, next) => {
+    const token = req.headers["authorization"]?.split(" ")[1];
+    if (!token) return res.status(401).json({ msg: "Unauthorized" });
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!roles.includes(decoded.role))
+        return res.status(403).json({ msg: "Forbidden" });
+      req.user = decoded;
+      next();
+    } catch (e) {
+      res.status(401).json({ msg: "Invalid token" });
+    }
+  };
+}
+
+// GET /api/products (anyone can view products)
 router.get("/", async (req, res) => {
   try {
     const {
@@ -64,6 +82,40 @@ router.get("/:id", async (req, res) => {
     const p = await Product.findById(req.params.id);
     if (!p) return res.status(404).json({ error: "Product not found" });
     res.json(p);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/products — Only "admin" can create
+router.post("/", authorize(["admin"]), async (req, res) => {
+  try {
+    const product = new Product(req.body);
+    await product.save();
+    res.json({ success: true, product });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/products/:id — Only "admin" or "content" can update
+router.put("/:id", authorize(["admin", "content"]), async (req, res) => {
+  try {
+    const updated = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!updated) return res.status(404).json({ msg: "Product not found" });
+    res.json({ success: true, product: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/products/:id — Only "admin" can delete
+router.delete("/:id", authorize(["admin"]), async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
