@@ -200,10 +200,37 @@ export default function QuickViewModal({ product, onClose }) {
 */
 }
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { FaStar } from "react-icons/fa";
+import { API } from "../api";
 
 export default function QuickViewModal({ product, onClose }) {
-  
+  const [avgRating, setAvgRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+
+  // Fetch reviews only for rating display
+  useEffect(() => {
+    async function fetchReviews() {
+      try {
+        const res = await fetch(`${API}/api/reviews?productId=${product._id}`);
+        const data = await res.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          const avg =
+            data.reduce((sum, r) => sum + (r.rating || 0), 0) / data.length;
+          setAvgRating(avg);
+          setReviewCount(data.length);
+        } else {
+          setAvgRating(0);
+          setReviewCount(0);
+        }
+      } catch (err) {
+        console.error("Error loading reviews:", err);
+      }
+    }
+    if (product._id) fetchReviews();
+  }, [product._id]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white p-4 rounded w-11/12 md:w-3/4 lg:w-1/2">
@@ -221,6 +248,32 @@ export default function QuickViewModal({ product, onClose }) {
           />
           <div className="flex-1">
             <p className="text-sm text-gray-700">{product.description}</p>
+
+            <div className="flex items-center mt-1 text-yellow-500 text-sm">
+              {avgRating > 0 ? (
+                <>
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <FaStar
+                        key={n}
+                        size={12}
+                        className={`${
+                          n <= Math.round(avgRating)
+                            ? "text-yellow-400"
+                            : "text-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="ml-1 text-gray-700 dark:text-gray-300 text-xs">
+                    {avgRating.toFixed(1)} ({reviewCount})
+                  </span>
+                </>
+              ) : (
+                <span className="text-xs text-gray-400">No ratings yet</span>
+              )}
+            </div>
+
             <div className="mt-3">
               <div className="font-bold">${product.price.toFixed(2)}</div>
               {product.originalPrice && (
@@ -243,7 +296,9 @@ export default function QuickViewModal({ product, onClose }) {
               </button>
               <button
                 onClick={() => {
-                  const wl = JSON.parse(localStorage.getItem("wishlist") || "[]");
+                  const wl = JSON.parse(
+                    localStorage.getItem("wishlist") || "[]"
+                  );
                   // avoid duplicates
                   if (!wl.find((i) => i._id === product._id)) {
                     wl.push(product);
