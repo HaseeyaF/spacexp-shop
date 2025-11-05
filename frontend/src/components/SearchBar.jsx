@@ -1,38 +1,5 @@
-{
-  /** 
 import React, { useEffect, useState } from "react";
-
-export default function SearchBar({ onSearch }) {
-  const [q, setQ] = useState("");
-
-  useEffect(() => {
-    const id = setTimeout(() => {
-      if (typeof onSearch === "function") onSearch(q.trim() || undefined);
-    }, 450);
-    return () => clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
-
-  return (
-    <div className="mb-4">
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Search products..."
-        className="w-full border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-800 
-                   text-gray-900 dark:text-gray-100 
-                   placeholder-gray-500 dark:placeholder-gray-400 
-                   p-3 rounded focus:outline-none focus:ring-2 
-                   focus:ring-blue-500 dark:focus:ring-blue-400"
-      />
-    </div>
-  );
-}
-  */
-}
-
-import React, { useEffect, useState } from "react";
+import { Search } from 'lucide-react';
 
 export default function SearchBar({ onSearch }) {
   const [q, setQ] = useState("");
@@ -44,11 +11,15 @@ export default function SearchBar({ onSearch }) {
 
   return (
     <div className="mb-4">
+      <Search className="absolute left-3 top-3 text-gray-400" size={18} />
       <input
         value={q}
-        onChange={(e) => setQ(e.target.value)}
+        onChange={(e) => {
+          setQ(e.target.value);
+          onSearch && onSearch(e.target.value);
+        }}
         placeholder="Search products..."
-        className="w-full border p-3 rounded"
+        className="w-full border border-gray-300 p-3 pl-10 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
   );
