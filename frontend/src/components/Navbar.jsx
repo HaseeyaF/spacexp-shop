@@ -43,11 +43,6 @@ const Navbar = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/wishlist" className="hover:text-blue-300 dark:hover:text-blue-400">
-                  {t("wishlist")}
-                </Link>
-              </li>
-              <li>
                 <Link to="/contact" className="hover:text-blue-300 dark:hover:text-blue-400">
                   {t("contact")}
                 </Link>
@@ -101,11 +96,6 @@ const Navbar = () => {
             <li>
               <Link to="/cart" className="block hover:text-blue-300" onClick={() => setIsOpen(false)}>
                 {t("cart")}
-              </Link>
-            </li>
-            <li>
-              <Link to="/wishlist" className="block hover:text-blue-300" onClick={() => setIsOpen(false)}>
-                {t("wishlist")}
               </Link>
             </li>
             <li>
