@@ -52,8 +52,15 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
+    if (cart.length === 0) {
+      toast.error("Your cart is empty!");
+      return;
+    }
+
     toast.success("Redirecting to checkout...");
-    // Navigate to checkout page here
+    setTimeout(() => {
+      navigate("/checkout");
+    }, 1000);
   };
 
   const totalPrice = cart.reduce(
