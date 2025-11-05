@@ -94,14 +94,42 @@ export default function ProductCard({ product }) {
 }*/
 }
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import QuickViewModal from "./QuickViewModal";
+import { FaStar } from "react-icons/fa";
+import { API } from "../api";
 
 export default function ProductCard({ product }) {
   const [open, setOpen] = useState(false);
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
     : 0;
+
+  const [avgRating, setAvgRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+
+  // Fetch reviews only for rating display
+  useEffect(() => {
+    async function fetchReviews() {
+      try {
+        const res = await fetch(`${API}/api/reviews?productId=${product._id}`);
+        const data = await res.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          const avg =
+            data.reduce((sum, r) => sum + (r.rating || 0), 0) / data.length;
+          setAvgRating(avg);
+          setReviewCount(data.length);
+        } else {
+          setAvgRating(0);
+          setReviewCount(0);
+        }
+      } catch (err) {
+        console.error("Error loading reviews:", err);
+      }
+    }
+    if (product._id) fetchReviews();
+  }, [product._id]);
   
     return (
     <div className="border rounded p-3 flex flex-col">
@@ -121,6 +149,33 @@ export default function ProductCard({ product }) {
         <div className="font-semibold text-sm">{product.name}</div>
         <div className="text-xs text-gray-500">{product.brand}</div>
       </div>
+
+      <div className="flex items-center mt-1 text-yellow-500 text-sm">
+        {avgRating > 0 ? (
+            <>
+              <div className="flex items-center">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <FaStar
+                    key={n}
+                    size={12}
+                    className={`${
+                      n <= Math.round(avgRating)
+                        ? "text-yellow-400"
+                        : "text-gray-300 dark:text-gray-600"
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="ml-1 text-gray-700 dark:text-gray-300 text-xs">
+                {avgRating.toFixed(1)} ({reviewCount})
+              </span>
+            </>
+          ) : (
+            <span className="text-xs text-gray-400">No ratings yet</span>
+          )}
+      </div>
+
+
       <div className="mt-3 flex items-center justify-between">
         <div>
           <div className="font-bold">${product.price.toFixed(2)}</div>
