@@ -92,26 +92,41 @@ export default function WishlistPage() {
 }
 
 import React, { useEffect, useState } from "react";
+import { HeartOff, ShoppingCartIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function WishlistPage() {
   const [items, setItems] = useState([]);
-  
+
   useEffect(() => {
     const raw = localStorage.getItem("wishlist");
     if (raw) setItems(JSON.parse(raw));
   }, []);
-  
+
   function remove(id) {
     const newItems = items.filter((i) => i._id !== id);
     setItems(newItems);
     localStorage.setItem("wishlist", JSON.stringify(newItems));
   }
-  
+  const navigate = useNavigate();
+
   return (
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">Wishlist</h2>
+      
+      <button
+        onClick={() => navigate("/cart")}
+        className="flex items-center gap-2 px-3 py-2 rounded-md bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-700 transition"
+      >
+        <ShoppingCartIcon className="w-5 h-5" />
+        <span className="hidden md:inline">Cart</span>
+      </button>
+
       {items.length === 0 ? (
-        <div>No items in wishlist</div>
+        <div className="text-center py-10 text-gray-400">
+          <HeartOff size={64} className="mx-auto mb-3" />
+          <p className="text-sm">Your wishlist is empty</p>
+        </div>
       ) : (
         <div className="grid md:grid-cols-3 gap-4">
           {items.map((it) => (
@@ -128,6 +143,18 @@ export default function WishlistPage() {
                 className="mt-2 border px-3 py-1 rounded"
               >
                 Remove
+              </button>
+
+              <button
+                onClick={() => {
+                  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+                  cart.push({ ...it, quantity: 1 });
+                  localStorage.setItem("cart", JSON.stringify(cart));
+                  alert("Added to cart");
+                }}
+                className="mt-2 bg-green-600 text-white px-3 py-1 rounded"
+              >
+                Add to Cart
               </button>
             </div>
           ))}
