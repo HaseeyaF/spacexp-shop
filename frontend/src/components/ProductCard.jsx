@@ -101,9 +101,12 @@ import { API } from "../api";
 
 export default function ProductCard({ product }) {
   const [open, setOpen] = useState(false);
-  const discount = product.originalPrice
-    ? Math.round((1 - product.price / product.originalPrice) * 100)
-    : 0;
+
+  const variant = product.variants?.[0] || {};
+  const price = variant.price ?? product.price ?? 0;
+  const originalPrice = variant.originalPrice ?? product.originalPrice ?? null;
+
+  const discount = originalPrice ? Math.round((1 - price / originalPrice) * 100) : 0;
 
   const [avgRating, setAvgRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
@@ -136,7 +139,7 @@ export default function ProductCard({ product }) {
       <div className="relative">
         <img
           className="w-full h-44 object-cover rounded"
-          src={product.images?.[0] || "https://picsum.photos/seed/p/400/300"}
+          src={variant.images?.[0] || product.images?.[0] || "https://picsum.photos/seed/p/400/300"}
           alt={product.name}
         />
         {product.isDeal && (
@@ -178,10 +181,12 @@ export default function ProductCard({ product }) {
 
       <div className="mt-3 flex items-center justify-between">
         <div>
-          <div className="font-bold">${product.price.toFixed(2)}</div>
-          {product.originalPrice && (
+          <div className="font-bold">
+            Rs. {price ? price.toFixed(2) : "0.00"}
+          </div>
+          {originalPrice && (
             <div className="text-xs line-through text-gray-500">
-              ${product.originalPrice.toFixed(2)}
+              Rs. {originalPrice.toFixed(2)}
             </div>
           )}
           {discount > 0 && (

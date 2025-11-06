@@ -40,7 +40,7 @@ export default function DealsSection() {
         {deals.map((d) => (
           <div key={d._id} className="border p-3 rounded">
             <img
-              src={d.images?.[0]}
+              src={d.variants?.[0]?.images?.[0]}
               alt={d.name}
               className="w-full h-36 object-cover rounded mb-2"
             />
@@ -52,7 +52,11 @@ export default function DealsSection() {
               <Countdown end={d.dealEnd} />
             </div>
             <div className="mt-2">
-              <div className="font-bold">${d.price.toFixed(2)}</div>
+              <div className="font-bold">
+                {d.variants?.[0]?.price
+                  ? `Rs. ${d.variants[0].price.toFixed(2)}`
+                  : "N/A"}
+              </div>
             </div>
           </div>
         ))}

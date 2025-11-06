@@ -208,6 +208,21 @@ export default function QuickViewModal({ product, onClose }) {
   const [avgRating, setAvgRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
 
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [activeVariant, setActiveVariant] = useState(
+    product.variants?.[0] || {}
+  );
+
+  // Derive info from active variant
+  const price = activeVariant.price ?? product.basePrice ?? 0;
+  const originalPrice =
+    activeVariant.originalPrice ?? product.originalPrice ?? null;
+  const image =
+    activeVariant.images?.[0] ||
+    product.images?.[0] ||
+    "https://picsum.photos/seed/p/400/300";
+
   // Fetch reviews only for rating display
   useEffect(() => {
     async function fetchReviews() {
@@ -231,6 +246,85 @@ export default function QuickViewModal({ product, onClose }) {
     if (product._id) fetchReviews();
   }, [product._id]);
 
+  // Handle color change
+  const handleColorSelect = (color) => {
+    setSelectedColor(color);
+    const variant = product.variants.find((v) => v.color === color);
+    setActiveVariant(variant);
+    setSelectedSize(""); // reset size on color change
+  };
+
+  // Handle size select
+  const handleSizeSelect = (e) => {
+    setSelectedSize(e.target.value);
+  };
+
+  // Validate and add to cart
+  const handleAddToCart = () => {
+    const requiresColor = product.variants?.length > 0;
+    const requiresSize = activeVariant?.sizes?.length > 0;
+
+    if ((requiresColor && !selectedColor) || (requiresSize && !selectedSize)) {
+      alert(
+        requiresColor && requiresSize
+          ? "Please select color and size first."
+          : requiresColor
+          ? "Please select a color first."
+          : "Please select required options."
+      );
+      return;
+    }
+
+    const selectedVariant = selectedColor
+      ? product.variants.find((v) => v.color === selectedColor)
+      : activeVariant;
+
+    const selectedSizeObj =
+      requiresSize && selectedSize
+        ? selectedVariant.sizes.find((s) => s.sizeLabel === selectedSize)
+        : null;
+
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    cart.push({
+      ...product,
+      variant: selectedVariant,
+      selectedSize: selectedSizeObj,
+      qty: 1,
+    });
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert("Added to cart");
+  };
+
+  // Validate and add to wishlist
+  const handleAddToWishlist = () => {
+    const requiresColor = product.variants?.length > 0;
+    const requiresSize = activeVariant?.sizes?.length > 0;
+
+    if ((requiresColor && !selectedColor) || (requiresSize && !selectedSize)) {
+      alert(
+        requiresColor && requiresSize
+          ? "Please select color and size first."
+          : requiresColor
+          ? "Please select a color first."
+          : "Please select required options."
+      );
+      return;
+    }
+
+    const wl = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    if (!wl.find((i) => i._id === product._id)) {
+      wl.push({
+        ...product,
+        selectedColor,
+        selectedSize,
+      });
+      localStorage.setItem("wishlist", JSON.stringify(wl));
+      alert("Added to wishlist");
+    } else {
+      alert("Already in wishlist");
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white p-4 rounded w-11/12 md:w-3/4 lg:w-1/2">
@@ -242,8 +336,8 @@ export default function QuickViewModal({ product, onClose }) {
         </div>
         <div className="flex gap-4">
           <img
-            src={product.images?.[0]}
-            alt=""
+            src={image}
+            alt={product.name}
             className="w-1/3 object-cover rounded"
           />
           <div className="flex-1">
@@ -274,40 +368,71 @@ export default function QuickViewModal({ product, onClose }) {
               )}
             </div>
 
+            {/* Price */}
             <div className="mt-3">
-              <div className="font-bold">${product.price.toFixed(2)}</div>
-              {product.originalPrice && (
+              <div className="font-bold">Rs. {price.toFixed(2)}</div>
+              {originalPrice && (
                 <div className="text-xs line-through text-gray-500">
-                  ${product.originalPrice.toFixed(2)}
+                  Rs. {originalPrice.toFixed(2)}
                 </div>
               )}
             </div>
+
+            {/* ✅ Color Selection */}
+            {product.variants?.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-semibold mb-1">Select Color:</h4>
+                <div className="flex gap-2">
+                  {product.variants.map((v) => (
+                    <button
+                      key={v.color}
+                      title={v.color}
+                      style={{ backgroundColor: v.colorCode }}
+                      onClick={() => handleColorSelect(v.color)}
+                      className={`w-6 h-6 rounded-full border-2 ${
+                        selectedColor === v.color
+                          ? "border-blue-600"
+                          : "border-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ✅ Size Selection */}
+            {activeVariant?.sizes?.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-semibold mb-1">Select Size:</h4>
+                <select
+                  value={selectedSize}
+                  onChange={handleSizeSelect}
+                  className="border rounded p-2 w-full"
+                >
+                  <option value="">Select a size</option>
+                  {activeVariant.sizes.map((s) => (
+                    <option
+                      key={s.sizeLabel}
+                      value={s.sizeLabel}
+                      disabled={s.stock <= 0}
+                    >
+                      {s.sizeLabel} {s.stock <= 0 ? "(Out of stock)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Buttons */}
             <div className="mt-4 flex gap-2">
               <button
-                onClick={() => {
-                  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-                  cart.push({ ...product, qty: 1 });
-                  localStorage.setItem("cart", JSON.stringify(cart));
-                  alert("Added to cart");
-                }}
+                onClick={handleAddToCart}
                 className="bg-green-600 text-white px-4 py-2 rounded"
               >
                 Add to cart
               </button>
               <button
-                onClick={() => {
-                  const wl = JSON.parse(
-                    localStorage.getItem("wishlist") || "[]"
-                  );
-                  // avoid duplicates
-                  if (!wl.find((i) => i._id === product._id)) {
-                    wl.push(product);
-                    localStorage.setItem("wishlist", JSON.stringify(wl));
-                    alert("Added to wishlist");
-                  } else {
-                    alert("Already in wishlist");
-                  }
-                }}
+                onClick={handleAddToWishlist}
                 className="border px-4 py-2 rounded"
               >
                 Wishlist

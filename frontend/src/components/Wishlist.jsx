@@ -113,7 +113,7 @@ export default function WishlistPage() {
   return (
     <div className="container mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">Wishlist</h2>
-      
+
       <button
         onClick={() => navigate("/cart")}
         className="flex items-center gap-2 px-3 py-2 rounded-md bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-700 transition"
@@ -132,12 +132,20 @@ export default function WishlistPage() {
           {items.map((it) => (
             <div className="border p-3 rounded" key={it._id}>
               <img
-                src={it.images?.[0]}
+                src={it.images?.[0] || it.variants?.[0]?.images?.[0]}
                 alt={it.name}
                 className="w-full h-36 object-cover rounded mb-2"
               />
               <div className="font-semibold">{it.name}</div>
-              <div className="mt-2"> ${it.price.toFixed(2)}</div>
+              <div className="mt-2">
+                $
+                {(
+                  it.price ??
+                  it.basePrice ??
+                  it.variants?.[0]?.price ??
+                  0
+                ).toFixed(2)}
+              </div>
               <button
                 onClick={() => remove(it._id)}
                 className="mt-2 border px-3 py-1 rounded"
