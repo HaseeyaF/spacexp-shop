@@ -3,7 +3,7 @@ import { API } from "../api";
 
 export default function Checkout({ token }) {
   const [cart] = useState(JSON.parse(localStorage.getItem("cart") || "[]"));
-  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const subtotal = cart.reduce((sum, item) => sum + Number(item.variant?.price ?? item.basePrice ?? 0) *(item.quantity ?? 1), 0);
 
   useEffect(() => {
     // PayHere event handlers

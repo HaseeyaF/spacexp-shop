@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -18,12 +19,12 @@ const Cart = () => {
   };
 
   // Remove one qty (or delete if qty==1)
-  const handleRemoveOne = (id, size, color) => {
+  const handleRemoveOne = (id, sizeLabel, color) => {
     const updatedCart = cart
       .map((item) =>
         item._id === id &&
-        (item.size || "") === (size || "") &&
-        (item.color || "") === (color || "")
+        (item.selectedSize?.sizeLabel || "") === (sizeLabel || "") &&
+        (item.variant?.color || "") === (color || "")
           ? item.quantity > 1
             ? { ...item, quantity: item.quantity - 1 }
             : null
@@ -34,11 +35,11 @@ const Cart = () => {
   };
 
   // Increase qty
-  const handleIncrease = (id, size, color) => {
+  const handleIncrease = (id, sizeLabel, color) => {
     const updatedCart = cart.map((item) =>
       item._id === id &&
-      (item.size || "") === (size || "") &&
-      (item.color || "") === (color || "")
+      (item.selectedSize?.sizeLabel || "") === (sizeLabel || "") &&
+      (item.variant?.color || "") === (color || "")
         ? { ...item, quantity: (item.quantity ?? 1) + 1 }
         : item
     );
@@ -64,11 +65,10 @@ const Cart = () => {
   };
 
   const totalPrice = cart.reduce(
-    (total, item) => total + Number(item.price) * (item.quantity ?? 1),
+    (total, item) => total + Number(item.variant?.price ?? item.basePrice ?? 0) * (item.quantity ?? 1),
     0
   );
 
-  const navigate = useNavigate();
 
   return (
     <div className="p-4 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
@@ -95,64 +95,78 @@ const Cart = () => {
       ) : (
         <>
           <div className="flex flex-col gap-4">
-            {cart.map((item) => (
-              <div
-                key={`${item._id}-${item.size || "nosize"}-${
-                  item.color || "nocolor"
-                }`}
-                className="flex flex-col md:flex-row items-center justify-between border-b border-gray-300 dark:border-gray-700 pb-4"
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={item.image || item.images?.[0]}
-                    alt={item.name}
-                    className="w-24 h-24 object-contain"
-                  />
-                  <div>
-                    <h3 className="text-lg font-semibold text-black dark:text-white">
-                      {item.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {item.category}
-                    </p>
-                    {/* Show size & color */}
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Size: {item.size || "—"} | Color: {item.color || "—"}
-                    </p>
-                    <p className="text-blue-600 dark:text-blue-400 font-bold">
-                      Rs. {Number(item.price).toLocaleString()}
-                    </p>
+            {cart.map((item) => {
+              // 🔹 Safely get image & price from variant
+              const variant = item.variant || {};
+              const size = item.selectedSize?.sizeLabel || "—";
+              const color = variant.color || "—";
+              const price = Number(variant.price ?? item.basePrice ?? 0);
+              const image =
+                variant.images?.[0] ||
+                item.images?.[0] ||
+                "https://picsum.photos/seed/c/200";
+
+              return (
+                <div
+                  key={`${item._id}-${item.size}-${item.color}`}
+                  className="flex flex-col md:flex-row items-center justify-between border-b border-gray-300 dark:border-gray-700 pb-4"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={image}
+                      alt={item.name}
+                      className="w-24 h-24 object-contain rounded"
+                    />
+                    <div>
+                      <h3 className="text-lg font-semibold text-black dark:text-white">
+                        {item.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {item.category}
+                      </p>
+
+                      {/* Show size & color */}
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        Size: {size || "—"} | Color: {color || "—"}
+                      </p>
+                      <p className="text-blue-600 dark:text-blue-400 font-bold">
+                        Rs. {" "}{price.toLocaleString(undefined, { minimumFractionDigits: 2,})}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Qty Controls */}
+                  <div className="mt-2 md:mt-0 flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        handleRemoveOne(item._id, size, color)
+                      }
+                      className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
+                    >
+                      −
+                    </button>
+                    <span className="px-3">{item.quantity ?? 1}</span>
+                    <button
+                      onClick={() =>
+                        handleIncrease(item._id, size, color)
+                      }
+                      className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
-
-                {/* Qty Controls */}
-                <div className="mt-2 md:mt-0 flex items-center gap-2">
-                  <button
-                    onClick={() =>
-                      handleRemoveOne(item._id, item.size, item.color)
-                    }
-                    className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
-                  >
-                    −
-                  </button>
-                  <span className="px-3">{item.quantity ?? 1}</span>
-                  <button
-                    onClick={() =>
-                      handleIncrease(item._id, item.size, item.color)
-                    }
-                    className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Cart Controls */}
           <div className="flex flex-col md:flex-row justify-between items-center mt-6 gap-4">
             <h3 className="text-xl font-bold text-black dark:text-white">
-              Total: Rs. {totalPrice.toLocaleString()}
+              Total: Rs.{" "}
+              {totalPrice.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </h3>
 
             <div className="flex gap-4">
