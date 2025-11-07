@@ -15,6 +15,9 @@ import Checkout from "./pages/Checkout";
 import PaySuccess from "./pages/PaySuccess";
 import PayCancel from "./pages/PayCancel";
 
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+
 function App() {
   return (
     <div className="min-h-screen flex flex-col">
@@ -33,6 +36,9 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/pay/success" element={<PaySuccess />} />
           <Route path="/pay/cancel" element={<PayCancel />} />
+
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </main>
 
