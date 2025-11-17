@@ -1,166 +1,112 @@
-// scripts/seedProducts.js
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const Product = require("./models/Product");
+const mongoose = require('mongoose');
+require('dotenv').config();
+const bcrypt = require('bcryptjs');
+const Product = require('./models/Product');
+const Ad = require('./models/Ad');
+const User = require('./models/User');
+const Promo = require('./models/Promo');
 
-dotenv.config(); // Load .env file (for MONGO_URI)
+async function seed() {
+  await mongoose.connect(process.env.MONGO_URI);
+  console.log('Connected to Mongo');
 
-// --- MongoDB Connection ---
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
-  });
+  await Product.deleteMany({});
+  await Ad.deleteMany({});
+  await User.deleteMany({});
+  await Promo.deleteMany({});
 
-// --- Sample Seed Data ---
-const sampleProducts = [
-  {
-    name: "Nike Air Zoom Pegasus 40",
-    slug: "nike-air-zoom-pegasus-40",
-    description:
-      "Experience comfort and speed with the Nike Air Zoom Pegasus 40 running shoes.",
-    brand: "Nike",
-    category: "Shoes",
-    tags: ["running", "men", "sport"],
-    basePrice: 18000,
-    variants: [
-      {
-        color: "Black",
-        colorCode: "#000000",
-        images: [
-          "https://example.com/images/nike-black-1.jpg",
-          "https://example.com/images/nike-black-2.jpg",
-        ],
-        model3d: "https://example.com/models/nike_black.glb",
-        arOverlay: "https://example.com/ar/nike_black.usdz",
-        price: 18500,
-        originalPrice: 20000,
-        sizes: [
-          {
-            sizeLabel: "M",
-            countrySizes: { US: "9", UK: "8", EU: "42", AU: "8", JP: "27" },
-            stock: 12,
-            sku: "NK-PGS-BLK-M",
-          },
-          {
-            sizeLabel: "L",
-            countrySizes: { US: "10", UK: "9", EU: "43", AU: "9", JP: "28" },
-            stock: 8,
-            sku: "NK-PGS-BLK-L",
-          },
-        ],
-      },
-      {
-        color: "White",
-        colorCode: "#FFFFFF",
-        images: [
-          "https://example.com/images/nike-white-1.jpg",
-          "https://example.com/images/nike-white-2.jpg",
-        ],
-        model3d: "https://example.com/models/nike_white.glb",
-        arOverlay: "https://example.com/ar/nike_white.usdz",
-        price: 19000,
-        originalPrice: 21000,
-        sizes: [
-          {
-            sizeLabel: "M",
-            countrySizes: { US: "9", UK: "8", EU: "42", AU: "8", JP: "27" },
-            stock: 5,
-            sku: "NK-PGS-WHT-M",
-          },
-        ],
-      },
-    ],
-    rating: 4.6,
-    totalSold: 342,
-    isDeal: true,
-    dealEnd: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // ends in 7 days
-  },
-  {
-    name: "Adidas Ultraboost 23",
-    slug: "adidas-ultraboost-23",
-    description: "Premium comfort running shoe with Boost cushioning.",
-    brand: "Adidas",
-    category: "Shoes",
-    tags: ["running", "unisex", "comfort"],
-    basePrice: 22000,
-    variants: [
-      {
-        color: "Grey",
-        colorCode: "#888888",
-        images: [
-          "https://example.com/images/adidas-grey-1.jpg",
-          "https://example.com/images/adidas-grey-2.jpg",
-        ],
-        price: 22500,
-        originalPrice: 24000,
-        sizes: [
-          {
-            sizeLabel: "S",
-            countrySizes: { US: "7", UK: "6", EU: "40", AU: "6", JP: "25" },
-            stock: 15,
-            sku: "AD-UB23-GRY-S",
-          },
-          {
-            sizeLabel: "M",
-            countrySizes: { US: "9", UK: "8", EU: "42", AU: "8", JP: "27" },
-            stock: 10,
-            sku: "AD-UB23-GRY-M",
-          },
-        ],
-      },
-    ],
-    rating: 4.8,
-    totalSold: 529,
-    isDeal: false,
-  },
-  {
-    name: "Apple AirPods Pro (2nd Gen)",
-    slug: "apple-airpods-pro-2",
-    description:
-      "Noise-cancelling wireless earbuds with improved sound and battery life.",
-    brand: "Apple",
-    category: "Electronics",
-    tags: ["audio", "wireless", "apple"],
-    basePrice: 95000,
-    variants: [
-      {
-        color: "White",
-        colorCode: "#FFFFFF",
-        images: [
-          "https://example.com/images/airpods-1.jpg",
-          "https://example.com/images/airpods-2.jpg",
-        ],
-        price: 95000,
-        originalPrice: 99900,
-        sizes: [],
-      },
-    ],
-    rating: 4.9,
-    totalSold: 2451,
-    isDeal: true,
-    dealEnd: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-  },
-];
+  const now = Date.now();
 
-async function seedProducts() {
-  try {
-    await Product.deleteMany({});
-    console.log("🗑️ Cleared existing products");
+  // sample products with variants + 3D model placeholders
+  const products = [
+    {
+      name: "Wireless Earbuds X1",
+      description: "True wireless earbuds with noise cancellation.",
+      brand: "SoundX",
+      category: "Electronics",
+      tags: ["audio","wireless"],
+      basePrice: 24.99,
+      variants: [
+        { color: "Black", colorCode: "#000000", images: ["https://picsum.photos/seed/earbuds-black/800/600"], model3d: "https://example.com/models/earbuds.glb", arOverlay: "https://picsum.photos/seed/earbuds-overlay/400/400", price: 24.99, originalPrice: 49.99, sizes: [] }
+      ],
+      isDeal: true,
+      dealEnd: new Date(now + 1000 * 60 * 60 * 12),
+      seoTitle: "Wireless Earbuds X1 - SoundX",
+      seoDescription: "True wireless earbuds with long battery and ANC.",
+      structuredData: {}
+    },
+    {
+      name: "Comfort Running Shoes",
+      description: "Breathable, lightweight running shoes.",
+      brand: "RunPro",
+      category: "Fashion",
+      tags: ["shoes","running"],
+      basePrice: 39.99,
+      variants: [
+        {
+          color: "Blue", colorCode: "#3b82f6",
+          images: ["https://picsum.photos/seed/shoes-blue/800/600"],
+          model3d: "",
+          arOverlay: "",
+          price: 39.99,
+          originalPrice: 79.99,
+          sizes: [
+            { sizeLabel: "7", countrySizes:{ US:"7", UK:"6", EU:"40" }, stock: 10, sku: "SH-BL-7" },
+            { sizeLabel: "8", countrySizes:{ US:"8", UK:"7", EU:"41" }, stock: 8, sku: "SH-BL-8" }
+          ]
+        }
+      ],
+      isDeal: true,
+      dealEnd: new Date(now + 1000 * 60 * 60 * 48),
+      seoTitle: "Comfort Running Shoes - RunPro",
+      seoDescription: "Lightweight running shoes with cushioning.",
+      structuredData: {}
+    },
+    {
+      name: "Classic Leather Wallet",
+      description: "Slim leather wallet with RFID protection.",
+      brand: "LeatherCo",
+      category: "Fashion",
+      tags: ["wallet","leather"],
+      basePrice: 14.99,
+      variants: [
+        { color: "Brown", colorCode: "#8b5e3c", images: ["https://picsum.photos/seed/wallet-brown/800/600"], price: 14.99, sizes: [] }
+      ],
+      seoTitle: "Classic Leather Wallet",
+      seoDescription: "Slim RFID wallet for everyday carry.",
+      structuredData: {}
+    }
+  ];
 
-    const created = await Product.insertMany(sampleProducts);
-    console.log(`✅ Inserted ${created.length} products`);
+  const ads = [
+    { title: "Mega Summer Sale — Up to 60% OFF", image: "https://picsum.photos/seed/sale1/1200/300", link: "/products?isDeal=true", priority: 10, active: true },
+    { title: "Free Shipping Over $50", image: "https://picsum.photos/seed/sale2/1200/300", link: "/products", priority: 5, active: true }
+  ];
 
-    process.exit(0);
-  } catch (err) {
-    console.error("❌ Seeding error:", err);
-    process.exit(1);
+  const users = [
+    { name: "Admin User", email: "admin@demo.com", password: "password", role: "admin" },
+    { name: "Marketing", email: "marketing@demo.com", password: "password", role: "marketing" },
+    { name: "Content", email: "content@demo.com", password: "password", role: "content" },
+    { name: "Sales", email: "sales@demo.com", password: "password", role: "sales" },
+    { name: "Customer", email: "user@demo.com", password: "password", role: "customer" }
+  ];
+
+  const promos = [
+    { code: "WELCOME10", discountType: "percent", discountValue: 10, minAmount: 10, maxUses: 100, validFrom: new Date(now - 1000*60*60), validTo: new Date(now + 1000*60*60*24*30), active: true },
+    { code: "FLAT5", discountType: "fixed", discountValue: 5, minAmount: 20, maxUses: 100, active: true }
+  ];
+
+  await Product.insertMany(products);
+  await Ad.insertMany(ads);
+  for(const u of users) {
+    const hash = await bcrypt.hash(u.password, 10);
+    const user = new User({ name: u.name, email: u.email, passwordHash: hash, role: u.role });
+    await user.save();
   }
+  await Promo.insertMany(promos);
+
+  console.log('Seeded products, ads, users, promos');
+  await mongoose.disconnect();
 }
 
-seedProducts();
+seed().catch(err => { console.error(err); mongoose.disconnect(); });

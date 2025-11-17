@@ -15,17 +15,10 @@ const OrderSchema = new mongoose.Schema({
   discount: Number,
   shipping: Number,
   total: Number,
-  paymentStatus: {
-    type: String,
-    enum: ["pending", "paid", "failed"],
-    default: "pending",
-  },
-  orderStatus: {
-    type: String,
-    enum: ["created", "processing", "delivered", "cancelled"],
-    default: "created",
-  },
+  paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending"},
+  orderStatus: { type: String, enum: ["created", "processing", "delivered", "cancelled"], default: "created", },
   payherePaymentId: String,
+  promoCode: String,
   createdAt: { type: Date, default: Date.now },
 });
 

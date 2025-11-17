@@ -6,7 +6,6 @@ const Ad = require("../models/Ad");
 router.get("/", async (req, res) => {
   const now = new Date();
   try {
-    // simple: return active ads (you may add date filtering)
     const ads = await Ad.find({ active: true }).sort({ priority: -1 });
     res.json(ads);
   } catch (err) {

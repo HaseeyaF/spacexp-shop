@@ -1,76 +1,40 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const jwt = require("jsonwebtoken");
-const Promo = require("../models/Promo");
+const Promo = require('../models/Promo');
+const { auth, authorizeRoles } = require('../middleware/auth');
 
-// ✅ Reuse same authorize function as in users.js
-function authorize(roles = []) {
-  return (req, res, next) => {
-    const token = req.headers["authorization"]?.split(" ")[1];
-    if (!token) return res.status(401).json({ msg: "Unauthorized" });
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      if (!roles.includes(decoded.role))
-        return res.status(403).json({ msg: "Forbidden" });
-      req.user = decoded;
-      next();
-    } catch (e) {
-      res.status(401).json({ msg: "Invalid token" });
-    }
-  };
-}
-
-// CREATE PROMO — admin or marketing
-router.post("/", authorize(["admin", "marketing"]), async (req, res) => {
-  try {
-    const promo = new Promo(req.body);
-    await promo.save();
-    res.json({ success: true, promo });
-  } catch (err) {
-    res.status(500).json({ msg: "Error creating promo" });
-  }
+// create promo (admin/marketing)
+router.post('/', auth(true), authorizeRoles(['admin','marketing']), async (req,res) => {
+  const body = req.body;
+  body.code = (body.code || '').toUpperCase();
+  const p = new Promo(body);
+  await p.save();
+  res.json(p);
 });
 
-// GET ALL PROMOS — admin, marketing
-router.get("/", authorize(["admin", "marketing"]), async (req, res) => {
-  try {
-    const promos = await Promo.find();
-    res.json(promos);
-  } catch (err) {
-    res.status(500).json({ msg: "Error fetching promos" });
-  }
+// validate promo (customer checkout)
+router.post('/validate', async (req,res) => {
+  const { code, userId, subtotal } = req.body;
+  if(!code) return res.status(400).json({ error: 'code required' });
+  const promo = await Promo.findOne({ code: code.toUpperCase(), active: true });
+  if(!promo) return res.status(404).json({ error: 'Invalid code' });
+  const now = new Date();
+  if(promo.validFrom && promo.validFrom > now) return res.status(400).json({ error: 'Not valid yet' });
+  if(promo.validTo && promo.validTo < now) return res.status(400).json({ error: 'Expired' });
+  if(promo.maxUses && promo.uses >= promo.maxUses) return res.status(400).json({ error: 'Max uses reached' });
+  if(promo.minAmount && subtotal < promo.minAmount) return res.status(400).json({ error: `Minimum amount ${promo.minAmount}` });
+  // firstTimeOnly logic would require orders history - simplified here
+  // compute discount
+  let discount = 0;
+  if(promo.discountType === 'percent') discount = subtotal * (promo.discountValue / 100);
+  else discount = promo.discountValue;
+  res.json({ valid: true, discount: Number(discount.toFixed(2)), promo: { code: promo.code } });
 });
 
-// GET SINGLE PROMO BY CODE — all roles (for validation)
-router.get("/:code", authorize(["admin", "marketing", "sales", "customer"]), async (req, res) => {
-  try {
-    const promo = await Promo.findOne({ code: req.params.code });
-    if (!promo) return res.status(404).json({ msg: "Promo not found" });
-    res.json(promo);
-  } catch (err) {
-    res.status(500).json({ msg: "Error fetching promo" });
-  }
-});
-
-// UPDATE PROMO — admin only
-router.put("/:id", authorize(["admin"]), async (req, res) => {
-  try {
-    const promo = await Promo.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!promo) return res.status(404).json({ msg: "Promo not found" });
-    res.json({ success: true, promo });
-  } catch (err) {
-    res.status(500).json({ msg: "Error updating promo" });
-  }
-});
-
-// DELETE PROMO — admin only
-router.delete("/:id", authorize(["admin"]), async (req, res) => {
-  try {
-    await Promo.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ msg: "Error deleting promo" });
-  }
+// list promos (admin)
+router.get('/', auth(true), authorizeRoles(['admin','marketing']), async (req,res) => {
+  const promos = await Promo.find();
+  res.json(promos);
 });
 
 module.exports = router;
