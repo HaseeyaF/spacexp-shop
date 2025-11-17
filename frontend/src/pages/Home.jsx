@@ -1,29 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import DealsSection from "../components/DealsSection";
 import SearchBar from "../components/SearchBar";
+import ProductCard from "../components/ProductCard";
 import { API } from "../api";
 
 export default function Home() {
   const [ads, setAds] = useState([]);
   const [products, setProducts] = useState([]);
-  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   useEffect(() => {
     fetch(`${API}/api/ads`)
       .then((r) => r.json())
       .then(setAds);
   }, []);
 
-  const handleSearch = query => {
-    if (!query) return setProducts([]);
-    fetch(`${API}/api/products?search=${encodeURIComponent(query)}`)
-      .then(r => r.json())
-      .then(res => setProducts(res.data || []))
-      .catch(console.error);
-  };
-  
+  const handleSearch = useCallback(async (query) => {
+    if (!query) {
+      setProducts([]);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch(`${API}/api/products?search=${query}`);
+      if (!res.ok) throw new Error("Failed to search products");
+
+      const data = await res.json();
+      setProducts(data.data || []);
+    } catch (err) {
+      console.error("Search error:", err);
+      setError("Unable to load search results.");
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const settings = {
     autoplay: true,
     dots: true,
@@ -32,37 +50,34 @@ export default function Home() {
     slidesToScroll: 1,
     autoplaySpeed: 4000,
   };
-  
+
   return (
     <div className="container mx-auto p-4">
-
+      {/* 🔍 Search Bar */}
       <SearchBar onSearch={handleSearch} />
 
-      {/* 🧾 Search Results (Optional) */}
-      {products.length > 0 && (
-        <div className="mt-10">
-          <h2 className="text-xl font-bold mb-3">Search Results</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {products.map(p => (
-              <div
-                key={p._id}
-                className="border rounded-lg p-3 hover:shadow-lg transition"
-              >
-                <img
-                  src={p.images?.[0]}
-                  alt={p.name}
-                  className="w-full h-40 object-cover rounded mb-2"
-                />
-                <div className="font-semibold text-sm">{p.name}</div>
-                <div className="text-xs text-gray-500 mb-1">{p.brand}</div>
-                <div className="font-bold text-green-700">
-                  Rs. {p.price.toFixed(2)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {loading && (
+        <div className="text-center my-4 text-gray-600">Searching...</div>
       )}
+
+      {/* Search Results */}
+      <div className="mt-10">
+        {loading ? (
+          <div className="text-gray-700 dark:text-gray-200">Loading...</div>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : (
+          <div>
+            <h2 className="text-xl font-bold mb-3">Search Results</h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {products.map((p) => (
+                <ProductCard key={p._id} product={p} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {ads.length > 0 && (
         <div className="mb-6">
@@ -80,7 +95,7 @@ export default function Home() {
         </div>
       )}
 
-      <DealsSection /> 
+      <DealsSection />
     </div>
   );
 }
