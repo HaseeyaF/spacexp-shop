@@ -17,10 +17,12 @@ export default function QuickViewModal({ product, onClose }) {
   const price = activeVariant.price ?? product.basePrice ?? 0;
   const originalPrice =
     activeVariant.originalPrice ?? product.originalPrice ?? null;
-  const image =
-    activeVariant.images?.[0] ||
-    product.images?.[0] ||
-    "https://picsum.photos/seed/p/400/300";
+  const images = activeVariant.images || [];
+  const video = activeVariant.video;
+
+  const deliveryDate = activeVariant.deliveryDate || "-";
+  const deliveryTime = activeVariant.deliveryTime || "-";
+  const deliveryCharge = activeVariant.deliveryCharge || 0;
 
   // Fetch reviews only for rating display
   useEffect(() => {
@@ -129,21 +131,39 @@ export default function QuickViewModal({ product, onClose }) {
       <div className={`bg-white p-4 rounded w-full ${onClose ? "md:w-3/4 lg:w-1/2" : ""}`}>
         {onClose && (
           <div className="flex justify-between items-start mb-3">
-          <h3 className="text-lg font-bold">{product.name}</h3>
+          <h2 className="text-lg font-bold">{product.name}</h2>
           <button onClick={onClose} className="text-gray-600">
             X
           </button>
         </div>
         )}
         
-        <div className="flex gap-4">
+        {/* LEFT: Images + Video */}
+        <div className="flex flex-col md:flex-row gap-4">
+          
+          <div className="md:w-1/2">
           {onClose && (
-              <img
-            src={image}
-            alt={product.name}
-            className="w-1/3 object-cover rounded"
-          />
+            <div className="flex flex-col gap-2">
+              {/* All Images */}
+              {images.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={product.name}
+                  className="w-full rounded object-cover"
+                />
+              ))}
+
+              {/* Product Video */}
+              {video && (
+                <video controls className="w-full rounded">
+                  <source src={video} type="video/mp4" />
+                </video>
+              )}
+            </div>
           )}
+          </div>
+          
           
           <div className="flex-1">
             {onClose && (
@@ -188,6 +208,13 @@ export default function QuickViewModal({ product, onClose }) {
               )}
             </div>
             )}
+
+            {/* 4DC — Delivery */}
+            <div className="mt-3 text-sm text-gray-700">
+              <p>Delivery Date: {deliveryDate}</p>
+              <p>Delivery Time: {deliveryTime}</p>
+              <p>Delivery Charge: Rs. {deliveryCharge}</p>
+            </div>
             
 
             {/* ✅ Color Selection */}
