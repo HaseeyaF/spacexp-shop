@@ -32,10 +32,6 @@ const Navbar = () => {
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-6">
-            <Link to="/" className="hover:text-blue-500 transition">
-              {t("home")}
-            </Link>
-
             <Link to="/products" className="hover:text-blue-500 transition">
               {t("products")}
             </Link>
