@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const { auth, authorizePermissions } = require('../middleware/auth');
+const mongoose = require("mongoose")
 
 // POST create product
 router.post( '/', auth(true), authorizePermissions(['product:create']),
@@ -93,10 +94,21 @@ router.get('/', async (req, res, next) => {
 // GET product by ID or slug
 router.get('/:id', async (req, res, next) => {
   try {
-    const id = req.params.id;
-    const p = await Product.findOne({ $or: [{ _id: id }, { slug: id }] });
-    if (!p) return res.status(404).json({ error: 'Product not found' });
-    res.json(p);
+    const idOrSlug = req.params.id;
+    let product;
+
+    if (mongoose.Types.ObjectId.isValid(idOrSlug)) {
+      // Try finding by _id
+      product = await Product.findById(idOrSlug);
+    }
+
+    if (!product) {
+      // Try finding by slug
+      product = await Product.findOne({ slug: idOrSlug });
+    }
+
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+    res.json(product);
   } catch (err) {
     next(err);
   }
