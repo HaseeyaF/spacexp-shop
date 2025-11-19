@@ -46,7 +46,8 @@ function App() {
           <Route path="/about" element={<About />} />
           
           <Route path="/products" element={<Products />} />
-          <Route path="/products/:id" element={<ProductDetail />} />
+          <Route path="/products/product/:id" element={<ProductDetail />} />
+          <Route path="/products/product/slug" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/checkout" element={<Checkout />} />
@@ -65,8 +66,8 @@ function App() {
             <Route path="/admin/content" element={<AdminContent />} />
           </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" />} />
+          {/* Fallback 
+          <Route path="*" element={<Navigate to="/" />} />*/}
         </Routes>
       </main>
 
