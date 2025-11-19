@@ -137,15 +137,21 @@ export default function QuickViewModal({ product, onClose }) {
         )}
         
         <div className="flex gap-4">
-          <img
+          {onClose && (
+              <img
             src={image}
             alt={product.name}
             className="w-1/3 object-cover rounded"
           />
+          )}
+          
           <div className="flex-1">
+            {onClose && (
             <p className="text-sm text-gray-700">{product.description}</p>
+            )}
 
-            <div className="flex items-center mt-1 text-yellow-500 text-sm">
+            {onClose && (
+              <div className="flex items-center mt-1 text-yellow-500 text-sm">
               {avgRating > 0 ? (
                 <>
                   <div className="flex items-center">
@@ -169,8 +175,10 @@ export default function QuickViewModal({ product, onClose }) {
                 <span className="text-xs text-gray-400">No ratings yet</span>
               )}
             </div>
-
+            )}
+            
             {/* Price */}
+            {onClose && (
             <div className="mt-3">
               <div className="font-bold">Rs. {price.toFixed(2)}</div>
               {originalPrice && (
@@ -179,6 +187,8 @@ export default function QuickViewModal({ product, onClose }) {
                 </div>
               )}
             </div>
+            )}
+            
 
             {/* ✅ Color Selection */}
             {product.variants?.length > 0 && (

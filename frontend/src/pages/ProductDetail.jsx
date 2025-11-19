@@ -83,11 +83,6 @@ export default function ProductDetail() {
         <div className="md:w-1/2">
           {renderMainMedia()}
 
-          {/* ✅ QuickViewModal for Add to Cart / Wishlist */}
-          <div className="mt-6">
-            <QuickViewModal product={product} />
-          </div>
-
           {/* Thumbnail selector */}
           {selectedVariant?.images?.length > 1 && (
             <div className="flex gap-2 mt-2">
@@ -174,6 +169,11 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* ✅ QuickViewModal for Add to Cart / Wishlist */}
+          <div className="mt-6">
+            <QuickViewModal product={product} />
+          </div>
 
       {/* Similar Products */}
       {product.similarProducts?.length > 0 && (
