@@ -45,7 +45,7 @@ export default function ProductCard({ product }) {
     <div className="border rounded p-3 flex flex-col">
       <div
         className="cursor-pointer"
-        onClick={() => navigate(`/product/${product._id}`)}
+        onClick={() => navigate(`product/${product.slug || product._id}`)}
       >
         <img
           className="w-full h-44 object-cover rounded"
