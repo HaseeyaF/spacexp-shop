@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const Order = require('../models/Order');
-const { auth, authorizeRoles } = require('../middleware/auth');
+const { auth, authorizePermissions } = require('../middleware/auth');
 
 // helper: compute MD5 verify
 function verifyPayHereMd5(body, merchantSecret) {
@@ -16,9 +16,10 @@ function verifyPayHereMd5(body, merchantSecret) {
 // create order
 router.post('/create', auth(true), async (req,res) => {
   try {
-    const { userId, items, subtotal, discount=0, shipping=0, promoCode } = req.body;
+    const { userId, items, subtotal, discount=0, shipping=0 } = req.body;
     const total = Number((subtotal - discount + shipping).toFixed(2));
-    const order = new Order({ userId, items, subtotal, discount, shipping, total, paymentStatus:'pending', promoCode });
+    const order = new Order({ userId, items, subtotal, discount, shipping, total, paymentStatus:'pending' });
+    
     await order.save();
     res.json({ orderId: order._id.toString(), total });
   } catch(err){ res.status(500).json({ error: err.message }); }
@@ -29,30 +30,42 @@ router.post('/payhere-notify', async (req,res) => {
   try {
     const body = req.body;
     if(!verifyPayHereMd5(body, process.env.PAYHERE_MERCHANT_SECRET)) return res.status(400).send('Invalid signature');
+    
     const o = await Order.findById(body.order_id);
     if(!o) return res.status(404).send('Order not found');
+    
     const status = parseInt(body.status_code, 10);
     o.paymentStatus = status === 2 ? 'paid' : (status === 0 ? 'pending' : 'failed');
     o.payherePaymentId = body.payment_id;
+    
     await o.save();
     res.sendStatus(200);
   } catch(e){ console.error(e); res.status(500).send('error'); }
 });
 
 // admin: list orders
-router.get('/', auth(true), authorizeRoles(['admin','sales']), async (req,res) => {
-  const orders = await Order.find().sort({ createdAt:-1 }).limit(200);
-  res.json(orders);
+router.get('/', auth(true), authorizePermissions(['order:view']), async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 }).limit(200);
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // update order status
-router.put('/:id/status', auth(true), authorizeRoles(['admin','sales']), async (req,res) => {
-  const { status } = req.body;
-  const o = await Order.findById(req.params.id);
-  if(!o) return res.status(404).json({ error: 'Order not found' });
-  o.orderStatus = status;
-  await o.save();
-  res.json({ success:true });
+router.put('/:id/status', auth(true), authorizePermissions(['order:update']), async (req, res) => {
+  try {
+    const { status } = req.body;
+    const o = await Order.findById(req.params.id);
+    if (!o) return res.status(404).json({ error: 'Order not found' });
+
+    o.orderStatus = status;
+    await o.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
