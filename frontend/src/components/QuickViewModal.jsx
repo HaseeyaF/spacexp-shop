@@ -125,14 +125,17 @@ export default function QuickViewModal({ product, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white p-4 rounded w-11/12 md:w-3/4 lg:w-1/2">
-        <div className="flex justify-between items-start mb-3">
+    <div className={onClose ? "fixed inset-0 z-50 flex items-center justify-center bg-black/40" : ""}>
+      <div className={`bg-white p-4 rounded w-full ${onClose ? "md:w-3/4 lg:w-1/2" : ""}`}>
+        {onClose && (
+          <div className="flex justify-between items-start mb-3">
           <h3 className="text-lg font-bold">{product.name}</h3>
           <button onClick={onClose} className="text-gray-600">
             X
           </button>
         </div>
+        )}
+        
         <div className="flex gap-4">
           <img
             src={image}
