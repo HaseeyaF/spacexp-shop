@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QuickViewModal from "./QuickViewModal";
 import { FaStar } from "react-icons/fa";
@@ -13,121 +13,125 @@ export default function ProductCard({ product }) {
   const discount = originalPrice
     ? Math.round((1 - price / originalPrice) * 100)
     : 0;
-  const [avgRating, setAvgRating] = useState(0);
-  const [reviewCount, setReviewCount] = useState(0);
 
   const navigate = useNavigate();
 
-  // Fetch reviews only for rating display
-  useEffect(() => {
-    async function fetchReviews() {
-      try {
-        const res = await fetch(`${API}/api/reviews?productId=${product._id}`);
-        const data = await res.json();
-
-        if (Array.isArray(data) && data.length > 0) {
-          const avg =
-            data.reduce((sum, r) => sum + (r.rating || 0), 0) / data.length;
-          setAvgRating(avg);
-          setReviewCount(data.length);
-        } else {
-          setAvgRating(0);
-          setReviewCount(0);
-        }
-      } catch (err) {
-        console.error("Error loading reviews:", err);
-      }
-    }
-    if (product._id) fetchReviews();
-  }, [product._id]);
-
   return (
-    <div className="border rounded p-3 flex flex-col">
+    <div className="border rounded-lg p-3 flex flex-col bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
       <div
         className="cursor-pointer"
         onClick={() => navigate(`product/${product.slug || product._id}`)}
       >
-        <img
-          className="w-full h-44 object-cover rounded"
-          src={
-            variant.images?.[0] ||
-            product.images?.[0] ||
-            "https://picsum.photos/seed/p/400/300"
-          }
-          alt={product.name}
-        />
-        {product.isDeal && (
-          <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 text-xs rounded">
-            DEAL
-          </div>
-        )}
-
-        <div className="mt-3 flex-1">
-          <div className="font-semibold text-sm">{product.name}</div>
-          <div className="text-xs text-gray-500">{product.brand}</div>
-        </div>
-
-        <div className="flex items-center mt-1 text-yellow-500 text-sm">
-          {avgRating > 0 ? (
-            <>
-              <div className="flex items-center">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <FaStar
-                    key={n}
-                    size={12}
-                    className={`${
-                      n <= Math.round(avgRating)
-                        ? "text-yellow-400"
-                        : "text-gray-300 dark:text-gray-600"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="ml-1 text-gray-700 dark:text-gray-300 text-xs">
-                {avgRating.toFixed(1)} ({reviewCount})
-              </span>
-            </>
+        {/* ✅ Product image + video */}
+        <div className="relative">
+          {/* Image */}
+          {variant?.images?.[0] ? (
+            <img
+              src={variant.images[0]}
+              alt={product.name}
+              className="w-full h-44 object-cover rounded"
+            />
           ) : (
-            <span className="text-xs text-gray-400">No ratings yet</span>
+            <img
+              src={
+                product.image ||
+                product.images?.[0] ||
+                "https://picsum.photos/seed/p/400/300"
+              }
+              alt={product.name}
+              className="w-full h-44 object-cover rounded"
+            />
           )}
-        </div>
-      </div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <div>
-          <div className="font-bold">
-            Rs. {price ? price.toFixed(2) : "0.00"}
-          </div>
-          {originalPrice && (
-            <div className="text-xs line-through text-gray-500">
-              Rs. {originalPrice.toFixed(2)}
+          {/* Video (optional) */}
+          {variant?.video && (
+            <video
+              controls
+              className="w-full h-40 mt-1 rounded"
+              poster={variant?.images?.[0]}
+            >
+              <source src={variant.video} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          )}
+
+          {/* Deal badge */}
+          {product.isDeal && (
+            <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 text-xs rounded">
+              DEAL
             </div>
           )}
-          {discount > 0 && (
-            <div className="text-xs text-red-500">{discount}% OFF</div>
+        </div>
+
+        {/* ✅ Product Info */}
+        <div className="mt-3 flex-1">
+          <div className="font-semibold text-sm truncate">{product.name}</div>
+          <div className="text-xs text-gray-500">{product.brand}</div>
+
+          {/* Rating */}
+          {typeof product.rating === "number" ||
+          typeof product.rating === "string" ? (
+            <div className="flex items-center mt-1 text-yellow-500 text-sm">
+              {Array.from({ length: 5 }, (_, i) => (
+                <span key={i}>
+                  {i < Math.round(Number(product.rating)) ? "★" : "☆"}
+                </span>
+              ))}
+              <span className="ml-2 text-gray-600 dark:text-gray-300 text-xs">
+                ({product.totalRatings || 0})
+              </span>
+            </div>
+          ) : (
+            <div className="mt-1 text-gray-400 text-xs italic">
+              No ratings yet
+            </div>
           )}
         </div>
-        <div className="flex flex-col gap-2">
-          <button
-            onClick={() => setOpen(true)}
-            className="bg-blue-600 text-white px-3 py-1 rounded text-xs"
-          >
-            Quick view
-          </button>
-          <button
-            onClick={() => {
-              // add to cart — keep it simple: localStorage cart
-              const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-              cart.push({ ...product, qty: 1 });
-              localStorage.setItem("cart", JSON.stringify(cart));
-              alert("Added to cart");
-            }}
-            className="border px-3 py-1 rounded text-xs"
-          >
-            Add
-          </button>
+
+        {/* ✅ Price + Delivery + Actions */}
+        <div className="mt-3 flex flex-col gap-2">
+          {/* Price */}
+          <div>
+            <div className="font-bold text-gray-900 dark:text-white">
+              Rs. {price.toFixed(2)}
+            </div>
+
+            {originalPrice > 0 && (
+              <div className="text-xs line-through text-gray-500">
+                Rs. {originalPrice.toFixed(2)}
+              </div>
+            )}
+
+            {discount > 0 && (
+              <div className="text-xs text-red-500">{discount}% OFF</div>
+            )}
+          </div>
+
+          {/* Delivery info (only if available) */}
+          {(variant?.deliveryDate ||
+            variant?.deliveryTime ||
+            variant?.deliveryCharge) && (
+            <div className="text-xs text-gray-600 dark:text-gray-300 border-t pt-2 mt-1">
+              {variant?.deliveryDate && <p>Delivery: {variant.deliveryDate}</p>}
+              {variant?.deliveryTime && <p>Time: {variant.deliveryTime}</p>}
+              {variant?.deliveryCharge !== undefined && (
+                <p>Charge: Rs. {variant.deliveryCharge}</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
+      {/* Actions */}
+      <div className="flex justify-between mt-2">
+        <button
+          onClick={() => setOpen(true)}
+          className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
+        >
+          Quick view
+        </button>
+      </div>
+
+      {/* Quick View Modal */}
       {open && (
         <QuickViewModal product={product} onClose={() => setOpen(false)} />
       )}
