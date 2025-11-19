@@ -11,11 +11,16 @@ const VariantSchema = new mongoose.Schema({
   color: String,
   colorCode: String,
   images: [String],
+  video: String,
   model3d: String,
   arOverlay: String,
   price: Number,
   originalPrice: Number,
   sizes: [SizeStockSchema],
+  deliveryDate: String,
+  deliveryTime: String,
+  deliveryCharge: Number,
+  preDeliveryCharge: Number,
 });
 
 const ProductSchema = new mongoose.Schema({
@@ -32,6 +37,7 @@ const ProductSchema = new mongoose.Schema({
   isDeal: Boolean,
   dealEnd: Date,
   createdAt: { type: Date, default: Date.now },
+  similarProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
 });
 
 module.exports = mongoose.model("Product", ProductSchema);
