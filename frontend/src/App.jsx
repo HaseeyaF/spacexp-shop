@@ -58,11 +58,11 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />}>
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="products" element={<AdminProducts />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="promos" element={<AdminPromos />} />
-            <Route path="content" element={<AdminContent />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/orders" element={<AdminOrders />} />
+            <Route path="/admin/promos" element={<AdminPromos />} />
+            <Route path="/admin/content" element={<AdminContent />} />
           </Route>
 
           {/* Fallback */}
