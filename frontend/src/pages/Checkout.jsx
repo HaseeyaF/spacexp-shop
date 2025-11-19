@@ -1,50 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { API } from "../api";
 
-export default function Checkout({ token }) {
+export default function Checkout() {
+  //console.log("Token at checkout:", token);
   const [cart] = useState(JSON.parse(localStorage.getItem("cart") || "[]"));
-  const subtotal = cart.reduce((sum, item) => sum + Number(item.variant?.price ?? item.basePrice ?? 0) *(item.quantity ?? 1), 0);
+  //const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const subtotal = cart.reduce(
+    (total, item) =>
+      total +
+      Number(item.variant?.price ?? item.basePrice ?? item.price ?? 0) *
+        (item.quantity ?? 1),
+    0
+  );
 
   useEffect(() => {
-    // PayHere event handlers
-    if (window.payhere) {
-      window.payhere.onCompleted = function onCompleted(orderId) {
-        console.log("Payment completed. Order ID:", orderId);
-        alert("Payment successful! Order ID: " + orderId);
-        window.location.href = "/pay/success";
-      };
+    // Called when payment is successfully completed
+    window.payhere.onCompleted = function (orderId) {
+      console.log("Payment completed. Order ID:", orderId);
+      window.location.href = "/pay/success";
+    };
 
-      window.payhere.onDismissed = function onDismissed() {
-        console.log("Payment dismissed");
-        alert("Payment dismissed");
-        window.location.href = "/pay/cancel";
-      };
+    // Called when user closes the payment popup
+    window.payhere.onDismissed = function () {
+      console.log("Payment dismissed");
+      window.location.href = "/pay/cancel";
+    };
 
-      window.payhere.onError = function onError(error) {
-        console.error("Payment error:", error);
-        alert("Payment failed: " + error);
-      };
-    }
+    // Called on any error
+    window.payhere.onError = function (error) {
+      console.error("Payment error:", error);
+      alert("Something went wrong with payment.");
+    };
   }, []);
 
   function pay() {
-    // Prevent calling PayHere if script not loaded
-    if (!window.payhere) {
-      alert("PayHere SDK not loaded. Please refresh and try again.");
-      return;
-    }
-
     fetch(`${API}/api/orders/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({ items: cart, subtotal }),
     })
       .then((r) => r.json())
       .then((order) => {
-        
+        console.log("Order created:", order);
         const payment = {
           sandbox: true,
           merchant_id: import.meta.env.VITE_PAYHERE_MERCHANT_ID,
@@ -63,26 +63,95 @@ export default function Checkout({ token }) {
           city: "Colombo",
           country: "Sri Lanka",
         };
-
-        console.log("Initiating payment:", payment);
         window.payhere.startPayment(payment);
       })
-      .catch((err) => {
-        console.error("Order creation failed:", err);
-        alert("Failed to create order. Please try again.");
-      });
+      .catch((err) => console.error("Order Create error:", err));
   }
 
   return (
-    <div className="container p-6">
-      <h2 className="text-2xl mb-4">Checkout</h2>
-      <div className="mb-4">Total: Rs. {subtotal.toFixed(2)}</div>
-      <button
-        onClick={pay}
-        className="bg-green-600 text-white px-4 py-2 rounded"
-      >
-        Pay with PayHere
-      </button>
+    <div className="container mx-auto p-6 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
+      <h2 className="text-2xl font-bold mb-6">Checkout</h2>
+
+      {cart.length === 0 ? (
+        <p>Your cart is empty.</p>
+      ) : (
+        <>
+          <div className="space-y-4 mb-6">
+            {cart.map((item, index) => {
+              const variant = item.variant || {};
+              const price = Number(
+                variant.price ?? item.basePrice ?? item.price ?? 0
+              );
+              const size = item.selectedSize?.sizeLabel || "—";
+              const color = variant.color || "—";
+              const image =
+                variant.images?.[0] ||
+                item.images?.[0] ||
+                "https://picsum.photos/seed/default/200";
+
+              return (
+                <div
+                  key={index}
+                  className="flex items-center justify-between border-b pb-3"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={image}
+                      alt={item.name}
+                      className="w-20 h-20 object-contain rounded"
+                    />
+                    <div>
+                      <h3 className="font-semibold">{item.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Size: {size} | Color: {color}
+                      </p>
+                      <p className="text-blue-600 dark:text-blue-400 font-medium">
+                        Rs.{" "}
+                        {price.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Qty: {item.quantity ?? 1}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="font-semibold text-gray-800 dark:text-gray-200">
+                    Rs.{" "}
+                    {(
+                      price * (item.quantity ?? 1)
+                    ).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex justify-between items-center border-t pt-4">
+            <h3 className="text-xl font-bold">Total</h3>
+            <span className="text-xl font-bold text-green-600 dark:text-green-400">
+              Rs.{" "}
+              {subtotal.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+          </div>
+
+          <div className="mt-6 text-right">
+            <button
+              onClick={pay}
+              className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg transition"
+            >
+              Pay with PayHere
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

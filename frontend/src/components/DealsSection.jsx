@@ -3,29 +3,29 @@ import { API } from "../api";
 
 function Countdown({ end }) {
   const [timeLeft, setTimeLeft] = useState(calc(end));
-  
+
   function calc(endTime) {
     const diff = new Date(endTime) - new Date();
-    
+
     if (diff <= 0) return "00:00:00";
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
-    
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+
+    return `${String(h).padStart(2, "0")}:${String(m).padStart( 2, "0" )}:${String(s).padStart(2, "0")}`;
   }
-  
+
   useEffect(() => {
     const id = setInterval(() => setTimeLeft(calc(end)), 1000);
     return () => clearInterval(id);
   }, [end]);
-  
+
   return <span className="text-red-600 font-semibold">{timeLeft}</span>;
 }
 
 export default function DealsSection() {
   const [deals, setDeals] = useState([]);
-  
+
   useEffect(() => {
     fetch(`${API}/api/products?isDeal=true&limit=8`)
       .then((r) => r.json())

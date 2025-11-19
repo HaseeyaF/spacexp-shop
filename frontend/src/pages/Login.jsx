@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { API } from "../api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
 
   async function submit(e) {
     e.preventDefault();
@@ -29,7 +28,6 @@ export default function Login() {
       }
 
       localStorage.setItem("token", data.token);
-      navigate("/checkout");
     } catch (err) {
       console.error(err);
       alert(err.message);

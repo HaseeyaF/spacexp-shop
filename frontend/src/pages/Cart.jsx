@@ -53,36 +53,55 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    if (cart.length === 0) {
-      toast.error("Your cart is empty!");
-      return;
-    }
+  const user =
+    localStorage.getItem("token") ||
+    localStorage.getItem("user") ||
+    localStorage.getItem("auth");
+    
+  if (cart.length === 0) {
+    toast.error("Your cart is empty!");
+    return;
+  }
 
-    toast.success("Redirecting to checkout...");
+  // 🔒 If user not logged in → redirect to login
+  if (!user) {
+    toast.error("Please login to continue");
     setTimeout(() => {
-      navigate("/checkout");
-    }, 1000);
-  };
+      navigate("/login");
+    }, 800);
+    return;
+  }
+
+  // 🛒 User logged in → go to checkout
+  toast.success("Redirecting to checkout...");
+  setTimeout(() => {
+    navigate("/checkout");
+  }, 800);
+};
+
 
   const totalPrice = cart.reduce(
-    (total, item) => total + Number(item.variant?.price ?? item.basePrice ?? 0) * (item.quantity ?? 1),
+    (total, item) =>
+      total +
+      Number(item.variant?.price ?? item.basePrice ?? 0) * (item.quantity ?? 1),
     0
   );
 
-
   return (
     <div className="p-4 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
-      <h2 className="text-2xl font-bold mb-4 text-black dark:text-white">
-        Your Shopping Cart
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold mb-4 text-black dark:text-white">
+          Your Shopping Cart
+        </h2>
 
-      <button
-        onClick={() => navigate("/wishlist")}
-        className="flex items-center gap-2 px-3 py-2 rounded-md bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-700 transition"
-      >
-        <Heart className="w-5 h-5" />
-        <span className="hidden md:inline">Wishlist</span>
-      </button>
+        <button
+          onClick={() => navigate("/wishlist")}
+          className="flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-blue-900 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+        >
+          <Heart className="w-5 h-5" />
+          <span className="hidden md:inline"></span>
+        </button>
+      </div>
 
       {cart.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-gray-500">
@@ -130,7 +149,10 @@ const Cart = () => {
                         Size: {size || "—"} | Color: {color || "—"}
                       </p>
                       <p className="text-blue-600 dark:text-blue-400 font-bold">
-                        Rs. {" "}{price.toLocaleString(undefined, { minimumFractionDigits: 2,})}
+                        Rs.{" "}
+                        {price.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                        })}
                       </p>
                     </div>
                   </div>
@@ -138,19 +160,15 @@ const Cart = () => {
                   {/* Qty Controls */}
                   <div className="mt-2 md:mt-0 flex items-center gap-2">
                     <button
-                      onClick={() =>
-                        handleRemoveOne(item._id, size, color)
-                      }
+                      onClick={() => handleRemoveOne(item._id, size, color)}
                       className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
                     >
                       −
                     </button>
                     <span className="px-3">{item.quantity ?? 1}</span>
                     <button
-                      onClick={() =>
-                        handleIncrease(item._id, size, color)
-                      }
-                      className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded transition"
+                      onClick={() => handleIncrease(item._id, size, color)}
+                      className="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition"
                     >
                       +
                     </button>
@@ -179,7 +197,7 @@ const Cart = () => {
 
               <button
                 onClick={handleCheckout}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
               >
                 Proceed to Checkout
               </button>
