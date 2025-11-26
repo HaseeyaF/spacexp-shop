@@ -19,18 +19,13 @@ export default function Home() {
   }, []);
 
   const handleSearch = useCallback(async (query) => {
-    if (!query) {
-      setProducts([]);
-      return;
-    }
-
+    if (!query) { setProducts([]); return; }
     setLoading(true);
     setError("");
 
     try {
       const res = await fetch(`${API}/api/products?search=${query}`);
       if (!res.ok) throw new Error("Failed to search products");
-
       const data = await res.json();
       setProducts(data.data || []);
     } catch (err) {
@@ -42,23 +37,14 @@ export default function Home() {
     }
   }, []);
 
-  const settings = {
-    autoplay: true,
-    dots: true,
-    infinite: true,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplaySpeed: 4000,
-  };
+  const settings = { autoplay: true, dots: true, infinite: true, slidesToShow: 1, slidesToScroll: 1, autoplaySpeed: 4000, };
 
   return (
     <div className="container mx-auto p-4">
-      {/* 🔍 Search Bar */}
+      {/* Search Bar */}
       <SearchBar onSearch={handleSearch} />
 
-      {loading && (
-        <div className="text-center my-4 text-gray-600">Searching...</div>
-      )}
+      {loading && ( <div className="text-center my-4 text-gray-600">Searching...</div> )}
 
       {/* Search Results */}
       <div className="mt-10">
@@ -69,7 +55,6 @@ export default function Home() {
         ) : (
           <div>
             <h2 className="text-xl font-bold mb-3">Search Results</h2>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {products.map((p) => (
                 <ProductCard key={p._id} product={p} />
@@ -84,17 +69,12 @@ export default function Home() {
           <Slider {...settings}>
             {ads.map((ad) => (
               <div key={ad._id}>
-                <img
-                  src={ad.image}
-                  alt={ad.title}
-                  className="w-full h-56 object-cover rounded"
-                />
+                <img src={ad.image} alt={ad.title} className="w-full h-56 object-cover rounded" />
               </div>
             ))}
           </Slider>
         </div>
       )}
-
       <DealsSection />
     </div>
   );
