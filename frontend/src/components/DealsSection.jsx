@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API } from "../api";
+import { useNavigate } from "react-router-dom";
 
 function Countdown({ end }) {
   const [timeLeft, setTimeLeft] = useState(calc(end));
@@ -12,7 +13,9 @@ function Countdown({ end }) {
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
 
-    return `${String(h).padStart(2, "0")}:${String(m).padStart( 2, "0" )}:${String(s).padStart(2, "0")}`;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(
+      s
+    ).padStart(2, "0")}`;
   }
 
   useEffect(() => {
@@ -25,6 +28,7 @@ function Countdown({ end }) {
 
 export default function DealsSection() {
   const [deals, setDeals] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${API}/api/products?isDeal=true&limit=8`)
@@ -33,17 +37,27 @@ export default function DealsSection() {
       .catch((err) => console.error(err));
   }, []);
 
+  const goToDetails = (id) => {
+    navigate(`/products/product/${id}`);
+  };
+
   return (
     <div className="my-6">
       <h2 className="text-2xl font-bold mb-3">Flash Deals</h2>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {deals.map((d) => (
-          <div key={d._id} className="border p-3 rounded">
+          <div
+            key={d._id}
+            onClick={() => goToDetails(d._id)}
+            className="border p-3 rounded cursor-pointer hover:shadow-md transition"
+          >
             <img
               src={d.variants?.[0]?.images?.[0]}
               alt={d.name}
               className="w-full h-36 object-cover rounded mb-2"
             />
+
             <div className="flex justify-between items-center">
               <div>
                 <div className="font-semibold text-sm">{d.name}</div>
@@ -51,12 +65,11 @@ export default function DealsSection() {
               </div>
               <Countdown end={d.dealEnd} />
             </div>
-            <div className="mt-2">
-              <div className="font-bold">
-                {d.variants?.[0]?.price
-                  ? `Rs. ${d.variants[0].price.toFixed(2)}`
-                  : "N/A"}
-              </div>
+
+            <div className="mt-2 font-bold">
+              {d.variants?.[0]?.price
+                ? `Rs. ${d.variants[0].price.toFixed(2)}`
+                : "N/A"}
             </div>
           </div>
         ))}
