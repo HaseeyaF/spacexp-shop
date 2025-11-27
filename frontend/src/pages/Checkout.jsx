@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { API } from "../api";
-
+import axios from "axios";
 export default function Checkout() {
   //console.log("Token at checkout:", token);
   const [cart] = useState(JSON.parse(localStorage.getItem("cart") || "[]"));
-  //const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const subtotal = cart.reduce(
     (total, item) =>
       total +
@@ -13,20 +12,42 @@ export default function Checkout() {
     0
   );
 
+  // ---------------- Promo States ----------------
+  const [promoCode, setPromoCode] = useState("");
+  const [promoResult, setPromoResult] = useState(null);
+  const [promoError, setPromoError] = useState("");
+
+  async function applyPromo() {
+    try {
+      const res = await axios.post(`${API}/api/promo/validate`, {
+        code: promoCode,
+        userId: localStorage.getItem("userId") || null,
+        subtotal,
+      });
+
+      setPromoResult(res.data);
+      setPromoError("");
+    } catch (err) {
+      setPromoResult(null);
+      setPromoError(err.response?.data?.error || "Invalid promo code");
+    }
+  }
+
+  const discount = promoResult?.discount || 0;
+  const finalTotal = subtotal - discount;
+
+  // ---------------- PayHere Triggers ----------------
   useEffect(() => {
-    // Called when payment is successfully completed
     window.payhere.onCompleted = function (orderId) {
       console.log("Payment completed. Order ID:", orderId);
       window.location.href = "/pay/success";
     };
 
-    // Called when user closes the payment popup
     window.payhere.onDismissed = function () {
       console.log("Payment dismissed");
       window.location.href = "/pay/cancel";
     };
 
-    // Called on any error
     window.payhere.onError = function (error) {
       console.error("Payment error:", error);
       alert("Something went wrong with payment.");
@@ -40,7 +61,7 @@ export default function Checkout() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({ items: cart, subtotal }),
+      body: JSON.stringify({ items: cart, subtotal, discount, finalTotal }),
     })
       .then((r) => r.json())
       .then((order) => {
@@ -53,7 +74,7 @@ export default function Checkout() {
           notify_url: `${API}/api/orders/payhere-notify`,
           order_id: order.orderId,
           items: "Cart Checkout",
-          amount: subtotal.toFixed(2),
+          amount: finalTotal.toFixed(2),
           currency: "LKR",
           first_name: "Test",
           last_name: "User",
@@ -119,9 +140,7 @@ export default function Checkout() {
 
                   <div className="font-semibold text-gray-800 dark:text-gray-200">
                     Rs.{" "}
-                    {(
-                      price * (item.quantity ?? 1)
-                    ).toLocaleString(undefined, {
+                    {(price * (item.quantity ?? 1)).toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -131,15 +150,58 @@ export default function Checkout() {
             })}
           </div>
 
+          {/* ---------------- Promo Code Section ---------------- */}
+          <div className="mt-4 border p-4 rounded bg-gray-50 dark:bg-gray-800">
+            <h3 className="font-semibold mb-2">Apply Promo Code</h3>
+
+            <div className="flex gap-2">
+              <input
+                className="border p-2 flex-1 rounded dark:bg-gray-700 dark:text-gray-100"
+                placeholder="Enter promo code"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+              />
+              <button
+                onClick={applyPromo}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+              >
+                Apply
+              </button>
+            </div>
+
+            {promoError && (
+              <p className="text-red-500 text-sm mt-2">{promoError}</p>
+            )}
+
+            {promoResult && (
+              <p className="text-green-600 text-sm mt-2">
+                🎉 Promo applied! You saved Rs. {promoResult.discount}
+              </p>
+            )}
+          </div>
+
+          {/* ---------------- Total Section ---------------- */}
           <div className="flex justify-between items-center border-t pt-4">
             <h3 className="text-xl font-bold">Total</h3>
-            <span className="text-xl font-bold text-green-600 dark:text-green-400">
-              Rs.{" "}
-              {subtotal.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
+
+            <div className="text-right">
+              {promoResult && (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Discount: - Rs.{" "}
+                  {promoResult.discount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                  })}
+                </div>
+              )}
+
+              <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                Rs.{" "}
+                {finalTotal.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </div>
+            </div>
           </div>
 
           <div className="mt-6 text-right">
