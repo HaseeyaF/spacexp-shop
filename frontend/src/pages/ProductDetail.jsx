@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { FaStar } from "react-icons/fa";
 import QuickViewModal from "../components/QuickViewModal";
+import Reviews from "../components/Reviews";
 
 export default function ProductDetail() {
   const { id } = useParams(); // product _id or slug from URL
@@ -143,11 +144,11 @@ export default function ProductDetail() {
                     <div className="text-sm font-medium">{v.color}</div>
                     {v.originalPrice && (
                       <div className="text-gray-500 line-through text-xs">
-                        ${v.originalPrice?.toFixed(2)}
+                        Rs. {v.originalPrice?.toFixed(2)}
                       </div>
                     )}
                     <div className="text-lg font-bold">
-                      ${v.price?.toFixed(2)}
+                      Rs. {v.price?.toFixed(2)}
                     </div>
                   </div>
                 ))}
@@ -171,9 +172,9 @@ export default function ProductDetail() {
       </div>
 
       {/* ✅ QuickViewModal for Add to Cart / Wishlist */}
-          <div className="mt-6">
-            <QuickViewModal product={product} />
-          </div>
+      <div className="mt-6">
+        <QuickViewModal product={product} />
+      </div>
 
       {/* Similar Products */}
       {product.similarProducts?.length > 0 && (
@@ -196,6 +197,12 @@ export default function ProductDetail() {
           </div>
         </div>
       )}
+
+      {/* Reviews Section */}
+      <div className="mt-10">
+        <Reviews productId={product._id} />
+      </div>
+      
     </div>
   );
 }
