@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { API } from "../api";
 import { AiOutlineHeart } from "react-icons/ai";
+import SizeChart from "./SizeChart";
 
 export default function QuickViewModal({ product, onClose }) {
   const [avgRating, setAvgRating] = useState(0);
@@ -283,21 +284,16 @@ export default function QuickViewModal({ product, onClose }) {
                     </button>
                   ))}
                 </div>
+                <SizeChart sizes={activeVariant.sizes} />
               </div>
             )}
 
             {/* Buttons */}
             <div className="mt-4 flex gap-2">
-              <button
-                onClick={handleAddToCart}
-                className="bg-blue-600 text-white px-4 py-2 rounded"
-              >
+              <button onClick={handleAddToCart} className="bg-blue-600 text-white px-4 py-2 rounded" >
                 Add to cart
               </button>
-              <button
-                onClick={handleAddToWishlist}
-                className="border px-4 py-2 rounded"
-              >
+              <button onClick={handleAddToWishlist} className="border px-4 py-2 rounded" >
                 <AiOutlineHeart size={22} className="text-gray-500" />
               </button>
             </div>
