@@ -5,6 +5,7 @@ import axios from "axios";
 import { FaStar } from "react-icons/fa";
 import QuickViewModal from "../components/QuickViewModal";
 import Reviews from "../components/Reviews";
+import TryOn from "../components/TryOn";
 
 export default function ProductDetail() {
   const { id } = useParams(); // product _id or slug from URL
@@ -83,6 +84,13 @@ export default function ProductDetail() {
         {/* Media */}
         <div className="md:w-1/2">
           {renderMainMedia()}
+
+          {/* ---- 3D + AR TryOn ---- */}
+          {selectedVariant?.model3d && (
+            <div className="mt-4">
+              <TryOn variant={selectedVariant} />
+            </div>
+          )}
 
           {/* Thumbnail selector */}
           {selectedVariant?.images?.length > 1 && (
@@ -202,7 +210,6 @@ export default function ProductDetail() {
       <div className="mt-10">
         <Reviews productId={product._id} />
       </div>
-      
     </div>
   );
 }
