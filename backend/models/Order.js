@@ -6,6 +6,9 @@ const OrderItemSchema = new mongoose.Schema({
   size: String,
   price: Number,
   qty: Number,
+  deliveryDate: String,
+  deliveryTime: String,
+  deliveryCharge: Number,
 });
 
 const OrderSchema = new mongoose.Schema({
@@ -15,8 +18,16 @@ const OrderSchema = new mongoose.Schema({
   discount: Number,
   shipping: Number,
   total: Number,
-  paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending"},
-  orderStatus: { type: String, enum: ["created", "processing", "delivered", "cancelled"], default: "created", },
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "paid", "failed"],
+    default: "pending",
+  },
+  orderStatus: {
+    type: String,
+    enum: ["created", "processing", "delivered", "cancelled"],
+    default: "created",
+  },
   payherePaymentId: String,
   createdAt: { type: Date, default: Date.now },
 });
