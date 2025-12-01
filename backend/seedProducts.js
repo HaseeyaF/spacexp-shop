@@ -56,8 +56,8 @@ async function seed() {
           color: "Blue",
           colorCode: "#3b82f6",
           images: ["https://picsum.photos/seed/shoes-blue/800/600"],
-          model3d: "",
-          arOverlay: "",
+          model3d: "/models/tshirt_black.glb",
+          arOverlay: "/overlays/tshirt_black.png",
           price: 39.99,
           originalPrice: 79.99,
           sizes: [
@@ -93,7 +93,7 @@ async function seed() {
         {
           color: "Brown",
           colorCode: "#8b5e3c",
-          images: ["https://picsum.photos/seed/wallet-brown/800/600"],
+          images: ["https://picsum.photos/seed/wallet-brown/800/600", "https://picsum.photos/seed/shoes-blue/800/600", "https://picsum.photos/seed/earbuds-black/800/600", "https://picsum.photos/seed/wallet-brown/800/600"],
           price: 14.99,
           sizes: [],
         },
@@ -101,6 +101,28 @@ async function seed() {
       seoTitle: "Classic Leather Wallet",
       seoDescription: "Slim RFID wallet for everyday carry.",
       structuredData: {},
+    },
+    {
+      name: "Red Sneakers",
+      slug: "red-sneakers",
+      description: "Stylish red sneakers",
+      brand: "Brand A",
+      category: "Footwear",
+      tags: ["shoes", "sneakers", "red"],
+      basePrice: 5000,
+      variants: [
+        {
+          color: "Red",
+          images: ["img1.jpg", "img2.jpg"],
+          video: "https://example.com/videos/red_sneakers.mp4",
+          price: 5200,
+          deliveryDate: "2025-09-15",
+          deliveryTime: "2-3 days",
+          deliveryCharge: 200,
+          preDeliveryCharge: 50,
+        },
+      ],
+      similarProducts: [], // can be linked later
     },
     {
       name: "Red Sneakers",
