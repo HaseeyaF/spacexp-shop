@@ -13,6 +13,10 @@ export default function Products() {
   const [error, setError] = useState("");
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
 
+  const categories = ["All", "Electronics", "Fashion", "Shoes", "Mobiles", "Accessories"];
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+
   const handleFilterChange = useCallback((f) => {
     setFilters(f);
     setPage(1);
@@ -53,6 +57,15 @@ export default function Products() {
     fetchProducts();
   }, [fetchProducts]);
 
+  const selectCategory = (cat) => {
+    setSelectedCategory(cat);
+    setFilters((prev) => ({
+      ...prev,
+      category: cat === "All" ? undefined : cat,
+    }));
+    setPage(1);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <div className="container mx-auto p-4">
@@ -67,8 +80,24 @@ export default function Products() {
             <Filters onChange={handleFilterChange} />
           </aside>
 
-          {/* Main Products Area */}
+          {/* Main Products Area - Right */}
           <main className="flex-1">
+
+            <div className="flex gap-3 mb-4 overflow-x-auto pb-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => selectCategory(cat)}
+                  className={`px-4 py-1 border rounded whitespace-nowrap 
+                    ${selectedCategory === cat 
+                      ? "bg-blue-500 text-white dark:bg-white dark:text-black" 
+                      : "bg-white dark:bg-gray-700"}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
             <div className="flex justify-between items-center mb-4">
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 Showing {products.length} results
@@ -98,7 +127,7 @@ export default function Products() {
                 No products found for selected filters.
               </p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4">
                 {products.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
