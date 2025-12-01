@@ -136,12 +136,16 @@ router.get("/:id", async (req, res, next) => {
 
     if (mongoose.Types.ObjectId.isValid(idOrSlug)) {
       // Try finding by _id
-      product = await Product.findById(idOrSlug);
+      product = await Product.findById(idOrSlug)
+      .populate("similarProducts")
+      .lean();
     }
 
     if (!product) {
       // Try finding by slug
-      product = await Product.findOne({ slug: idOrSlug });
+      product = await Product.findOne({ slug: idOrSlug })
+      .populate("similarProducts")
+      .lean();
     }
 
     if (!product) return res.status(404).json({ error: "Product not found" });

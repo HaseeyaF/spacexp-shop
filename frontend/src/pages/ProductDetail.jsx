@@ -6,6 +6,7 @@ import { FaStar } from "react-icons/fa";
 import QuickViewModal from "../components/QuickViewModal";
 import Reviews from "../components/Reviews";
 import TryOn from "../components/TryOn";
+import ProductCard from "../components/ProductCard";
 
 export default function ProductDetail() {
   const { id } = useParams(); // product _id or slug from URL
@@ -85,13 +86,6 @@ export default function ProductDetail() {
         <div className="md:w-1/2">
           {renderMainMedia()}
 
-          {/* ---- 3D + AR TryOn ---- */}
-          {selectedVariant?.model3d && (
-            <div className="mt-4">
-              <TryOn variant={selectedVariant} />
-            </div>
-          )}
-
           {/* Thumbnail selector */}
           {selectedVariant?.images?.length > 1 && (
             <div className="flex gap-2 mt-2">
@@ -106,6 +100,13 @@ export default function ProductDetail() {
                   }
                 />
               ))}
+            </div>
+          )}
+
+          {/* ---- 3D + AR TryOn ---- */}
+          {selectedVariant?.model3d && (
+            <div className="mt-4">
+              <TryOn variant={selectedVariant} />
             </div>
           )}
         </div>
@@ -185,22 +186,15 @@ export default function ProductDetail() {
       </div>
 
       {/* Similar Products */}
+      {/* ⭐ Similar Products Section */}
       {product.similarProducts?.length > 0 && (
         <div className="mt-10">
           <h2 className="text-xl font-semibold mb-4">Similar Products</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {product.similarProducts.map((p) => (
-              <div key={p._id} className="border p-2 rounded">
-                <img
-                  src={
-                    p.variants?.[0]?.images?.[0] ||
-                    "https://picsum.photos/seed/p/200/200"
-                  }
-                  alt={p.name}
-                  className="w-full h-32 object-cover rounded"
-                />
-                <div className="text-sm font-medium mt-1">{p.name}</div>
-              </div>
+
+          <div
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
+            {product.similarProducts.map((sim) => (
+              <ProductCard key={sim._id} product={sim} />
             ))}
           </div>
         </div>
