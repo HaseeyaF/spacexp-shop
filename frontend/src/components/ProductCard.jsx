@@ -6,30 +6,26 @@ import { API } from "../api";
 
 export default function ProductCard({ product }) {
   const [open, setOpen] = useState(false);
-
   const variant = product.variants?.[0] || {};
   const price = variant.price ?? product.price ?? 0;
   const originalPrice = variant.originalPrice ?? product.originalPrice ?? null;
-  const discount = originalPrice
-    ? Math.round((1 - price / originalPrice) * 100)
-    : 0;
-
+  const discount = originalPrice ? Math.round((1 - price / originalPrice) * 100) : 0;
   const navigate = useNavigate();
 
   return (
-    <div className="border rounded-lg p-3 flex flex-col bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
+    <div className="border rounded-lg bg-white dark:bg-gray-800 p-3 flex flex-col h-[420px] hover:shadow-md transition-shadow">
       <div
-        className="cursor-pointer"
+        className="cursor-pointer flex flex-col h-full"
         onClick={() => navigate(`product/${product.slug || product._id}`)}
       >
         {/* ✅ Product image + video */}
-        <div className="relative">
+        <div className="relative w-full h-[160px] rounded overflow-hidden flex items-center justify-center bg-gray-100">
           {/* Image */}
           {variant?.images?.[0] ? (
             <img
               src={variant.images[0]}
               alt={product.name}
-              className="w-full h-44 object-cover rounded"
+              className="object-cover w-full h-full"
             />
           ) : (
             <img
@@ -39,7 +35,7 @@ export default function ProductCard({ product }) {
                 "https://picsum.photos/seed/p/400/300"
               }
               alt={product.name}
-              className="w-full h-44 object-cover rounded"
+              className="object-cover w-full h-full"
             />
           )}
 
@@ -47,7 +43,7 @@ export default function ProductCard({ product }) {
           {variant?.video && (
             <video
               controls
-              className="w-full h-40 mt-1 rounded"
+              className="absolute top-0 left-0 w-full h-full object-cover"
               poster={variant?.images?.[0]}
             >
               <source src={variant.video} type="video/mp4" />
@@ -64,7 +60,7 @@ export default function ProductCard({ product }) {
         </div>
 
         {/* ✅ Product Info */}
-        <div className="mt-3 flex-1">
+        <div className="mt-2 flex flex-col flex-grow">
           <div className="font-semibold text-sm truncate">{product.name}</div>
           <div className="text-xs text-gray-500">{product.brand}</div>
 
@@ -82,9 +78,7 @@ export default function ProductCard({ product }) {
               </span>
             </div>
           ) : (
-            <div className="mt-1 text-gray-400 text-xs italic">
-              No ratings yet
-            </div>
+            <span className="text-gray-400 italic">No ratings yet</span>
           )}
         </div>
 
@@ -108,9 +102,7 @@ export default function ProductCard({ product }) {
           </div>
 
           {/* Delivery info (only if available) */}
-          {(variant?.deliveryDate ||
-            variant?.deliveryTime ||
-            variant?.deliveryCharge) && (
+          {(variant?.deliveryDate || variant?.deliveryTime || variant?.deliveryCharge) && (
             <div className="text-xs text-gray-600 dark:text-gray-300 border-t pt-2 mt-1">
               {variant?.deliveryDate && <p>Delivery: {variant.deliveryDate}</p>}
               {variant?.deliveryTime && <p>Time: {variant.deliveryTime}</p>}
@@ -123,8 +115,7 @@ export default function ProductCard({ product }) {
       </div>
       {/* Actions */}
       <div className="flex justify-between mt-2">
-        <button
-          onClick={() => setOpen(true)}
+        <button onClick={() => setOpen(true)}
           className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
         >
           Quick view
