@@ -31,3 +31,6 @@ backend/.env
 .expo-shared/
 android/app/build/
 ios/build/
+
+# Local Netlify folder
+.netlify
