@@ -39,6 +39,10 @@ app.use('/api/promos', promoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Backend running");
+});
+
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
