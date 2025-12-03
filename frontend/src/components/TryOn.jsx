@@ -1,12 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import * as bodyPix from "@tensorflow-models/body-pix";
-import * as posenet from "@tensorflow-models/posenet";
 import "@tensorflow/tfjs";
 
 export default function TryOn({ variant }) {
   const [view, setView] = useState("3d");
   const [bodyModel, setBodyModel] = useState(null);
-  const [poseModel, setPoseModel] = useState(null);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -55,16 +53,11 @@ export default function TryOn({ variant }) {
     setBodyModel(net);
   }, []);
 
-  const loadPoseNet = useCallback(async () => {
-    const pose = await posenet.load();
-    setPoseModel(pose);
-  }, []);
-
   /** ----------------------------- 
    * AR DETECTION LOOP
    --------------------------------*/
   const detectBody = async () => {
-    if (!bodyModel || !poseModel || !videoRef.current) {
+    if (!bodyModel || !videoRef.current) {
       requestAnimationFrame(detectBody);
       return;
     }
@@ -77,14 +70,17 @@ export default function TryOn({ variant }) {
     canvas.height = video.videoHeight;
 
     // 1. segment person
-    await bodyModel.segmentPerson(video, {
+    await bodyModel.estimatePersonSegmentation(video, {
       internalResolution: "medium",
       segmentationThreshold: 0.7,
     });
 
     // 2. pose detection
-    const pose = await poseModel.estimateSinglePose(video, {
+    const poses = await bodyModel.estimatePoses(video, {
       flipHorizontal: false,
+      maxPoses: 1,
+      scoreThreshold: 0.3,
+      nmsRadius: 20,
     });
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -92,6 +88,12 @@ export default function TryOn({ variant }) {
     // draw camera
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    if (!poses.length) {
+      requestAnimationFrame(detectBody);
+      return;
+    }
+
+    const pose = poses[0];
     // extract keypoints
     const ls = pose.keypoints.find((k) => k.part === "leftShoulder");
     const rs = pose.keypoints.find((k) => k.part === "rightShoulder");
@@ -117,9 +119,8 @@ export default function TryOn({ variant }) {
     if (view === "ar") {
       loadCamera();
       loadBodyPix();
-      loadPoseNet(); // important
     }
-  }, [view, loadCamera, loadBodyPix, loadPoseNet]);
+  }, [view, loadCamera, loadBodyPix]);
 
   return (
     <div className="p-4 flex flex-col items-center space-y-3">
