@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { API } from "../api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -15,7 +14,7 @@ export default function Login() {
     }
 
     try {
-      const res = await fetch(`${API}/api/auth/login`, {
+      const res = await fetch(`/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

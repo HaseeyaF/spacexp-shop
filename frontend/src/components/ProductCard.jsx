@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QuickViewModal from "./QuickViewModal";
 import { FaStar } from "react-icons/fa";
-import { API } from "../api";
 
 export default function ProductCard({ product }) {
   const [open, setOpen] = useState(false);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { API } from "../api";
 import axios from "axios";
+
 export default function Checkout() {
   //console.log("Token at checkout:", token);
   const [cart] = useState(JSON.parse(localStorage.getItem("cart") || "[]"));
@@ -19,7 +19,7 @@ export default function Checkout() {
 
   async function applyPromo() {
     try {
-      const res = await axios.post(`${API}/api/promo/validate`, {
+      const res = await axios.post(`/api/promo/validate`, {
         code: promoCode,
         userId: localStorage.getItem("userId") || null,
         subtotal,
@@ -55,7 +55,7 @@ export default function Checkout() {
   }, []);
 
   function pay() {
-    fetch(`${API}/api/orders/create`, {
+    fetch(`/api/orders/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export default function Checkout() {
           merchant_id: import.meta.env.VITE_PAYHERE_MERCHANT_ID,
           return_url: window.location.origin + "/pay/success",
           cancel_url: window.location.origin + "/pay/cancel",
-          notify_url: `${API}/api/orders/payhere-notify`,
+          notify_url: `/api/orders/payhere-notify`,
           order_id: order.orderId,
           items: "Cart Checkout",
           amount: finalTotal.toFixed(2),

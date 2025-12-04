@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import Filters from "../components/Filters";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
-import { API } from "../api";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -39,7 +38,7 @@ export default function Products() {
       const qs = new URLSearchParams(
         cleanFilters({ ...filters, page, limit: 24, sort })
       );
-      const res = await fetch(`${API}/api/products?${qs.toString()}`);
+      const res = await fetch(`/api/products?${qs.toString()}`);
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const data = await res.json();
       setProducts(data.data || []);

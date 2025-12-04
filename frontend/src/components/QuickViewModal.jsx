@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
-import { API } from "../api";
 import { AiOutlineHeart } from "react-icons/ai";
 import SizeChart from "./SizeChart";
 
@@ -29,7 +28,7 @@ export default function QuickViewModal({ product, onClose }) {
   useEffect(() => {
     async function fetchReviews() {
       try {
-        const res = await fetch(`${API}/api/reviews?productId=${product._id}`);
+        const res = await fetch(`/api/reviews?productId=${product._id}`);
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           const avg =

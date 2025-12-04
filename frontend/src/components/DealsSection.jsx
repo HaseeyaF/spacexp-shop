@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API } from "../api";
 import { useNavigate } from "react-router-dom";
 
 function Countdown({ end }) {
@@ -31,7 +30,7 @@ export default function DealsSection() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API}/api/products?isDeal=true&limit=8`)
+    fetch(`/api/products?isDeal=true&limit=8`)
       .then((r) => r.json())
       .then((json) => setDeals(json.data || []))
       .catch((err) => console.error(err));

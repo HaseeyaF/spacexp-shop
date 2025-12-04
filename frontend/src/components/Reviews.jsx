@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { API } from "../api";
 import { FaStar } from "react-icons/fa";
 
 export default function Reviews({ productId }) {
@@ -7,7 +6,7 @@ export default function Reviews({ productId }) {
   const [form, setForm] = useState({ name: "", rating: 0, comment: "" });
 
   useEffect(() => {
-    fetch(`${API}/api/reviews?productId=${productId}`)
+    fetch(`/api/reviews?productId=${productId}`)
       .then((r) => r.json())
       .then(setReviews)
       .catch(console.error);
@@ -19,14 +18,14 @@ export default function Reviews({ productId }) {
       alert("Please select a rating");
       return;
     }
-    await fetch(`${API}/api/reviews`, {
+    await fetch(`/api/reviews`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId, ...form }),
     });
     setForm({ name: "", rating: 0, comment: "" });
     // refresh reviews
-    const res = await fetch(`${API}/api/reviews?productId=${productId}`);
+    const res = await fetch(`/api/reviews?productId=${productId}`);
     setReviews(await res.json());
   }
 

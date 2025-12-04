@@ -5,7 +5,6 @@ import "slick-carousel/slick/slick-theme.css";
 import DealsSection from "../components/DealsSection";
 import SearchBar from "../components/SearchBar";
 import ProductCard from "../components/ProductCard";
-import { API } from "../api";
 
 export default function Home() {
   const [ads, setAds] = useState([]);
@@ -13,7 +12,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
-    fetch(`${API}/api/ads`)
+    fetch(`/api/ads`)
       .then((r) => r.json())
       .then(setAds);
   }, []);
@@ -24,7 +23,7 @@ export default function Home() {
     setError("");
 
     try {
-      const res = await fetch(`${API}/api/products?search=${query}`);
+      const res = await fetch(`/api/products?search=${query}`);
       if (!res.ok) throw new Error("Failed to search products");
       const data = await res.json();
       setProducts(data.data || []);

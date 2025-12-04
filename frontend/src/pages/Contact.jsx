@@ -23,7 +23,7 @@ const Contact = () => {
     setStatus("");
 
     try {
-      const res = await fetch("http://localhost:5000/api/contact", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -110,7 +110,7 @@ const Contact = () => {
         </form>
 
         {status && (
-          <p className="mt-4 text-center text-sm font-medium text-green-700 dark:text-green-400">
+          <p className="mt-4 text-center text-sm font-medium text-blue-700 dark:text-blue-400">
             {status}
           </p>
         )}
