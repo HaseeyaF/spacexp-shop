@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const path = require("path");
 require("dotenv").config();
 
 const contactRoutes = require("./routes/contact");
@@ -16,14 +17,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 
 const app = express();
-app.use(
-  cors({
-    origin: ["http://localhost:5173"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -39,8 +33,10 @@ app.use('/api/promos', promoRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
-app.get("/", (req, res) => {
-  res.send("Backend running");
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 mongoose
