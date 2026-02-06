@@ -55,7 +55,7 @@ export default function Checkout() {
   }, []);
 
   function pay() {
-    fetch(`/api/orders/create`, {
+    fetch(window.location.origin + `/api/orders/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export default function Checkout() {
           merchant_id: import.meta.env.VITE_PAYHERE_MERCHANT_ID,
           return_url: window.location.origin + "/pay/success",
           cancel_url: window.location.origin + "/pay/cancel",
-          notify_url: `/api/orders/payhere-notify`,
+          notify_url: window.location.origin + `/api/orders/payhere-notify`,
           order_id: order.orderId,
           items: "Cart Checkout",
           amount: finalTotal.toFixed(2),
